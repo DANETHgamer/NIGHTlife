@@ -1,0 +1,429 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NIGHTlife - Administração</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Oswald:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at center, rgba(255,23,56,.09), transparent 65%),
+    linear-gradient(135deg, #080808, #151015, #080808);
+  color: #fff;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Papel de parede NIGHTlife */
+body::before {
+  content: "NIGHTlife";
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(55px, 12vw, 150px);
+  font-weight: 800;
+  color: rgba(255,255,255,.025);
+  transform: rotate(-25deg);
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+}
+
+body::after {
+  content: "N";
+  position: fixed;
+  right: -100px;
+  bottom: -180px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 600px;
+  font-weight: 800;
+  color: rgba(255,23,56,.025);
+  pointer-events: none;
+  z-index: 0;
+}
+
+header {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(110deg, #100b0d, #25070d, #100b0d);
+  padding: 22px;
+  border-bottom: 2px solid #ff1738;
+  box-shadow: 0 4px 25px rgba(255,23,56,.18);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #e5e5e5;
+  text-shadow: 0 0 12px rgba(255,255,255,.2);
+}
+
+.logo span {
+  color: #ff1738;
+  font-family: 'Pacifico', cursive;
+  font-weight: normal;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: auto;
+  padding: 25px 15px;
+}
+
+h1, h2, h3 {
+  color: #e5e5e5;
+}
+
+h2 {
+  border-left: 4px solid #ff1738;
+  padding-left: 12px;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 1px;
+}
+
+.card {
+  background: rgba(19,19,19,.94);
+  border: 1px solid #454545;
+  border-left: 3px solid #ff1738;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 18px 0;
+  box-shadow: 0 5px 20px rgba(0,0,0,.4);
+}
+
+.card h3 {
+  color: #ff526b;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: .5px;
+}
+
+.numero {
+  font-size: 35px;
+  color: #ff1738;
+  font-weight: bold;
+  font-family: 'Orbitron', sans-serif;
+  text-shadow: 0 0 12px rgba(255,23,56,.3);
+}
+
+button {
+  background: linear-gradient(135deg, #ff1738, #a80020);
+  color: white;
+  border: 1px solid #ff526b;
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 5px 0;
+  font-weight: bold;
+  transition: .2s;
+}
+
+button:hover {
+  box-shadow: 0 0 15px rgba(255,23,56,.5);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.item {
+  padding: 17px 8px;
+  border-bottom: 1px solid #383838;
+  line-height: 1.8;
+}
+
+.item strong {
+  color: #e5e5e5;
+  font-size: 18px;
+}
+
+.status {
+  color: #ff526b;
+  font-weight: bold;
+}
+
+.renovar {
+  background: linear-gradient(135deg, #ff1738, #a80020);
+}
+
+#mensagem {
+  color: #e5e5e5;
+}
+
+#conteudo {
+  display: none;
+}
+
+#verificando {
+  text-align: center;
+  padding: 30px;
+}
+
+.rodape {
+  text-align: center;
+  color: #777;
+  font-size: 12px;
+  padding: 25px;
+  position: relative;
+  z-index: 1;
+}
+
+@media(max-width: 600px) {
+  .logo {
+    font-size: 23px;
+  }
+
+  header {
+    padding: 16px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">NIGHT<span>life</span></div>
+  <button id="sair">Sair da conta</button>
+</header>
+
+<main>
+
+  <div id="verificando" class="card">
+    Verificando suas permissões...
+  </div>
+
+  <div id="conteudo">
+
+    <h2>Centro de controle</h2>
+
+    <div class="card">
+      <h3>Administrador / Proprietário do NIGHTlife</h3>
+      <p id="usuario"></p>
+      <p>Permissão: ADMINISTRADOR</p>
+      <p>Área exclusiva de administração da plataforma.</p>
+    </div>
+
+    <div class="card">
+      <h3>Estabelecimentos cadastrados</h3>
+      <div class="numero" id="total">0</div>
+      <p>Estabelecimentos registrados no NIGHTlife.</p>
+    </div>
+
+    <div class="card">
+      <h3>Lista de estabelecimentos</h3>
+      <p id="mensagem">Carregando...</p>
+      <div id="lista"></div>
+    </div>
+
+    <div class="card">
+      <h3>Mensalidades</h3>
+      <div class="numero">R$ 25,00</div>
+      <p>Valor mensal por estabelecimento.</p>
+      <p>30 dias gratuitos e 2 dias de tolerância.</p>
+    </div>
+
+    <div class="card">
+      <h3>Chave Pix do administrador</h3>
+      <p>Área reservada. Ainda não cadastramos sua chave Pix.</p>
+      <p>Sua chave não será exibida aos visitantes ou proprietários.</p>
+    </div>
+
+  </div>
+
+</main>
+
+<div class="rodape">
+  NIGHTlife © 2026 — Painel administrativo
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://crmfxxsrhdncvaaxezvz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+async function iniciarPainel() {
+  const verificando = document.getElementById("verificando");
+
+  const { data: sessaoData, error: sessaoError } =
+    await supabaseClient.auth.getSession();
+
+  if (sessaoError || !sessaoData.session) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const usuario = sessaoData.session.user;
+
+  const { data: perfil, error: perfilError } =
+    await supabaseClient
+      .from("perfis")
+      .select("tipo")
+      .eq("id", usuario.id)
+      .single();
+
+  if (perfilError || !perfil || perfil.tipo !== "admin") {
+    verificando.textContent =
+      "Acesso negado. Esta área é exclusiva do administrador.";
+    return;
+  }
+
+  document.getElementById("usuario").textContent =
+    "Conectado como: " + usuario.email;
+
+  verificando.style.display = "none";
+  document.getElementById("conteudo").style.display = "block";
+
+  await carregarEstabelecimentos();
+}
+
+async function carregarEstabelecimentos() {
+  const mensagem = document.getElementById("mensagem");
+  const lista = document.getElementById("lista");
+
+  mensagem.textContent = "Carregando estabelecimentos...";
+  lista.innerHTML = "";
+
+  const { data, error } = await supabaseClient
+    .from("estabelecimentos")
+    .select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em")
+    .order("criado_em", { ascending: false });
+
+  if (error) {
+    mensagem.textContent = "Erro: " + error.message;
+    return;
+  }
+
+  document.getElementById("total").textContent =
+    data ? data.length : 0;
+
+  if (!data || data.length === 0) {
+    mensagem.textContent = "Nenhum estabelecimento cadastrado.";
+    return;
+  }
+
+  mensagem.textContent = "Estabelecimentos encontrados:";
+
+  data.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "item";
+
+    const nome = document.createElement("strong");
+    nome.textContent = item.nome || "Sem nome";
+
+    const detalhes = document.createElement("p");
+    detalhes.textContent =
+      (item.tipo || "Sem categoria") + " | " +
+      (item.endereco || "Sem endereço") + " | " +
+      (item.telefone || "Sem telefone");
+
+    const status = document.createElement("p");
+    status.className = "status";
+    status.textContent =
+      "Plano: " + (item.status_plano || "Não definido");
+
+    const vencimento = document.createElement("p");
+    vencimento.textContent = item.vencimento_em
+      ? "Vencimento: " +
+        new Date(item.vencimento_em).toLocaleDateString("pt-BR")
+      : "Vencimento não definido";
+
+    const botao = document.createElement("button");
+    botao.className = "renovar";
+    botao.textContent = "Confirmar Pix e renovar";
+
+    botao.addEventListener("click", async () => {
+      const primeiraConfirmacao = confirm(
+        "ATENÇÃO!\n\nVocê recebeu realmente R$ 25,00 via Pix de " +
+        (item.nome || "este estabelecimento") +
+        "?\n\nSó continue se o dinheiro já estiver na sua conta."
+      );
+
+      if (!primeiraConfirmacao) return;
+
+      const segundaConfirmacao = prompt(
+        'Para confirmar a renovação, digite exatamente: PIX RECEBIDO'
+      );
+
+      if (segundaConfirmacao !== "PIX RECEBIDO") {
+        alert("Renovação cancelada. Nenhum pagamento foi registrado.");
+        return;
+      }
+
+      botao.disabled = true;
+      botao.textContent = "Processando...";
+
+      const { error: renovacaoError } =
+        await supabaseClient.rpc(
+          "registrar_renovacao_nightlife",
+          {
+            p_estabelecimento_id: item.id
+          }
+        );
+
+      if (renovacaoError) {
+        alert("Erro ao renovar: " + renovacaoError.message);
+        botao.disabled = false;
+        botao.textContent = "Confirmar Pix e renovar";
+        return;
+      }
+
+      alert("Pagamento registrado e plano renovado!");
+
+      await carregarEstabelecimentos();
+    });
+
+    div.appendChild(nome);
+    div.appendChild(detalhes);
+    div.appendChild(status);
+    div.appendChild(vencimento);
+    div.appendChild(botao);
+
+    lista.appendChild(div);
+  });
+}
+
+document.getElementById("sair").addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+});
+
+iniciarPainel();
+</script>
+
+</body>
+</html>

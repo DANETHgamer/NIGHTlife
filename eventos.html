@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<title>NIGHTlife - Eventos</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 25px 15px;
+    min-height: 100vh;
+    background: #080808;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 550px;
+    margin: 20px auto;
+    padding: 28px;
+    background: linear-gradient(145deg, #171717, #0d0d0d);
+    border: 1px solid #383838;
+    border-top: 3px solid #ff1738;
+    border-radius: 15px;
+    box-shadow: 0 0 25px rgba(255, 23, 56, 0.12);
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 25px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #e5e5e5;
+    text-shadow: 0 0 12px rgba(255,255,255,.15);
+}
+
+.logo span {
+    color: #ff1738;
+}
+
+h2 {
+    text-align: center;
+    color: #e5e5e5;
+    font-family: 'Oswald', sans-serif;
+    font-size: 25px;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 14px;
+    margin: 8px 0;
+    border-radius: 9px;
+    border: 1px solid #444;
+    background: #111;
+    color: white;
+    font-size: 15px;
+    outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #ff1738;
+    box-shadow: 0 0 8px rgba(255,23,56,.2);
+}
+
+input::placeholder, textarea::placeholder {
+    color: #999;
+}
+
+textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+button, .voltar {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 9px;
+    background: #ff1738;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:hover, .voltar:hover {
+    background: #d90027;
+    box-shadow: 0 0 15px rgba(255,23,56,.35);
+}
+
+button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.voltar {
+    background: #292929;
+    border: 1px solid #555;
+    color: #e5e5e5;
+}
+
+.voltar:hover {
+    background: #383838;
+}
+
+#mensagem {
+    text-align: center;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+    margin-top: 18px;
+    color: #e5e5e5;
+}
+
+.rodape {
+    text-align: center;
+    color: #777;
+    font-size: 12px;
+    margin-top: 25px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">NIGHT<span>life</span></div>
+
+    <h2>CADASTRAR EVENTO</h2>
+
+    <form id="formEvento">
+
+        <input id="nome" placeholder="Nome do evento" maxlength="100" required>
+
+        <select id="estabelecimento" required>
+            <option value="">Selecione o estabelecimento</option>
+        </select>
+
+        <textarea id="descricao" placeholder="Descrição do evento" maxlength="1000"></textarea>
+
+        <input id="data" type="date" required>
+
+        <input id="horario" type="time" required>
+
+        <button type="submit" id="botao">CADASTRAR EVENTO</button>
+
+        <p id="mensagem"></p>
+
+    </form>
+
+    <a href="index.html" class="voltar">VOLTAR AO INÍCIO</a>
+
+    <div class="rodape">NIGHTlife — A noite começa aqui.</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://crmfxxsrhdncvaaxezvz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+const seletor = document.getElementById("estabelecimento");
+const mensagem = document.getElementById("mensagem");
+const formulario = document.getElementById("formEvento");
+const botao = document.getElementById("botao");
+
+async function carregarEstabelecimentos() {
+    const { data, error } = await supabaseClient
+        .from("estabelecimentos")
+        .select("id, nome")
+        .order("nome");
+
+    if (error) {
+        mensagem.textContent = "Erro ao carregar estabelecimentos: " + error.message;
+        return;
+    }
+
+    data.forEach(item => {
+        const opcao = document.createElement("option");
+        opcao.value = item.id;
+        opcao.textContent = item.nome;
+        seletor.appendChild(opcao);
+    });
+}
+
+formulario.addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    botao.disabled = true;
+    mensagem.textContent = "Salvando evento...";
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session) {
+        mensagem.textContent = "Faça login para cadastrar um evento.";
+        botao.disabled = false;
+        return;
+    }
+
+    const dados = {
+        nome: document.getElementById("nome").value.trim(),
+        estabelecimento_id: seletor.value,
+        descricao: document.getElementById("descricao").value.trim(),
+        data_evento: document.getElementById("data").value,
+        horario: document.getElementById("horario").value
+    };
+
+    const { error } = await supabaseClient
+        .from("eventos")
+        .insert([dados]);
+
+    if (error) {
+        mensagem.textContent = "Erro: " + error.message;
+    } else {
+        mensagem.textContent = "Evento cadastrado com sucesso!";
+        formulario.reset();
+    }
+
+    botao.disabled = false;
+});
+
+carregarEstabelecimentos();
+</script>
+
+</body>
+</html>

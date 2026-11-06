@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<title>NIGHTlife | Cadastro</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Oswald:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --preto: #080808;
+    --fundo: #101010;
+    --card: #171717;
+    --vermelho: #ff1738;
+    --vermelho-escuro: #a90020;
+    --prata: #e5e5e5;
+}
+
+body {
+    margin: 0;
+    padding: 0 15px 30px;
+    background: var(--preto);
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    text-align: center;
+    padding: 30px 10px;
+    background: radial-gradient(ellipse at center, #351018, #080808 78%);
+    border-bottom: 2px solid var(--vermelho);
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-simbolo {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--vermelho);
+    border-radius: 50%;
+    color: var(--prata);
+    font-family: "Orbitron", sans-serif;
+    font-size: 27px;
+    font-weight: 900;
+    box-shadow: 0 0 15px #ff173855;
+}
+
+.logo-texto {
+    font-family: "Orbitron", sans-serif;
+    font-size: clamp(29px, 7vw, 42px);
+    font-weight: 900;
+    color: var(--prata);
+    letter-spacing: -2px;
+}
+
+.logo-texto span {
+    color: var(--vermelho);
+    font-family: "Pacifico", cursive;
+    font-weight: normal;
+}
+
+.slogan {
+    margin: 15px 0 0;
+    color: #eee;
+    font-family: "Oswald", sans-serif;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.slogan span {
+    color: var(--vermelho);
+}
+
+.container {
+    max-width: 500px;
+    margin: 35px auto;
+    padding: 30px;
+    background: linear-gradient(145deg, #1c1c1c, #101010);
+    border: 1px solid #383838;
+    border-radius: 14px;
+    box-shadow: 0 0 25px #000;
+}
+
+h1 {
+    color: var(--prata);
+    text-align: center;
+    font-family: "Orbitron", sans-serif;
+    font-size: 23px;
+}
+
+h2 {
+    color: var(--vermelho);
+    text-align: center;
+    margin-bottom: 25px;
+    font-family: "Oswald", sans-serif;
+    font-size: 23px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 14px;
+    margin: 8px 0;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #101010;
+    color: white;
+    font-size: 15px;
+    outline: none;
+    transition: .2s;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--vermelho);
+    box-shadow: 0 0 10px #ff173833;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #999;
+}
+
+select option {
+    background: #171717;
+    color: white;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+button {
+    width: 100%;
+    background: linear-gradient(135deg, #ff1738, #a90020);
+    color: white;
+    padding: 15px;
+    border: 1px solid var(--vermelho);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: .2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px #ff173866;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+.voltar {
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    color: #ccc;
+    text-decoration: none;
+}
+
+.voltar:hover {
+    color: var(--vermelho);
+}
+
+#mensagem {
+    text-align: center;
+    margin-top: 15px;
+    overflow-wrap: anywhere;
+    color: var(--prata);
+}
+
+@media (max-width: 500px) {
+    .container {
+        padding: 22px 17px;
+    }
+
+    .slogan {
+        font-size: 12px;
+        letter-spacing: 3px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <div class="logo-simbolo">N</div>
+        <div class="logo-texto">NIGHT<span>life</span></div>
+    </div>
+
+    <p class="slogan">A noite começa <span>aqui</span></p>
+</header>
+
+<div class="container">
+
+<h1>NIGHTlife</h1>
+<h2>Cadastro de estabelecimento</h2>
+
+<form id="formCadastro">
+
+<input id="nome" type="text"
+placeholder="Nome do estabelecimento" required>
+
+<input id="responsavel" type="text"
+placeholder="Nome do responsável" required>
+
+<input id="email" type="email"
+placeholder="E-mail" required>
+
+<input id="telefone" type="tel"
+placeholder="Telefone">
+
+<input id="cidade" type="text"
+placeholder="Cidade" required>
+
+<input id="endereco" type="text"
+placeholder="Endereço" required>
+
+<input id="horario" type="text"
+placeholder="Horário de funcionamento">
+
+<select id="tipo">
+<option value="">Tipo de estabelecimento</option>
+<option value="Bar">Bar</option>
+<option value="Balada">Balada</option>
+<option value="Casa noturna">Casa noturna</option>
+<option value="Restaurante">Restaurante</option>
+<option value="Outro">Outro</option>
+</select>
+
+<textarea id="descricao"
+placeholder="Descrição do estabelecimento"></textarea>
+
+<button id="botaoCadastrar" type="submit">
+Cadastrar
+</button>
+
+<p id="mensagem"></p>
+
+</form>
+
+<a class="voltar" href="index.html">← Voltar para página inicial</a>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL =
+"https://crmfxxsrhdncvaaxezvz.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+const formulario = document.getElementById("formCadastro");
+const mensagem = document.getElementById("mensagem");
+const botao = document.getElementById("botaoCadastrar");
+
+formulario.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    botao.disabled = true;
+    mensagem.textContent = "Enviando cadastro...";
+
+    const dados = {
+        nome: document.getElementById("nome").value.trim(),
+        endereco:
+            document.getElementById("endereco").value.trim() +
+            ", " +
+            document.getElementById("cidade").value.trim(),
+        telefone: document.getElementById("telefone").value.trim() || null,
+        horario_funcionamento:
+            document.getElementById("horario").value.trim() || null,
+        descricao:
+            "Responsável: " +
+            document.getElementById("responsavel").value.trim() +
+            " | E-mail: " +
+            document.getElementById("email").value.trim() +
+            " | " +
+            document.getElementById("descricao").value.trim(),
+        tipo: document.getElementById("tipo").value || null
+    };
+
+    const { error } = await supabaseClient
+        .from("estabelecimentos")
+        .insert([dados]);
+
+    if (error) {
+        mensagem.textContent = "Erro ao cadastrar: " + error.message;
+    } else {
+        mensagem.textContent = "Cadastro enviado com sucesso!";
+        formulario.reset();
+    }
+
+    botao.disabled = false;
+});
+</script>
+
+</body>
+</html>

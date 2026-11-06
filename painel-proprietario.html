@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<title>NIGHTlife | Painel do Proprietário</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Oswald:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --preto: #080808;
+  --fundo: #101010;
+  --card: #171717;
+  --vermelho: #ff1738;
+  --vermelho-escuro: #a90020;
+  --prata: #e5e5e5;
+  --cinza: #aaa;
+}
+
+body {
+  margin: 0;
+  background: var(--preto);
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+header {
+  background: radial-gradient(ellipse at center, #351018, #080808 85%);
+  padding: 22px 20px;
+  border-bottom: 2px solid var(--vermelho);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-simbolo {
+  width: 43px;
+  height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--vermelho);
+  border-radius: 50%;
+  color: var(--prata);
+  font-family: "Orbitron", sans-serif;
+  font-size: 23px;
+  font-weight: 900;
+  box-shadow: 0 0 12px #ff173855;
+}
+
+.logo-texto {
+  font-family: "Orbitron", sans-serif;
+  font-size: 25px;
+  font-weight: 900;
+  color: var(--prata);
+  letter-spacing: -1px;
+}
+
+.logo-texto span {
+  color: var(--vermelho);
+  font-family: "Pacifico", cursive;
+  font-weight: normal;
+}
+
+h1, h2 {
+  color: var(--prata);
+  font-family: "Oswald", sans-serif;
+}
+
+h2 {
+  font-size: 27px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 12px;
+}
+
+h3 {
+  color: var(--vermelho);
+  font-family: "Oswald", sans-serif;
+  font-size: 21px;
+  margin-top: 0;
+}
+
+main {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px 15px 45px;
+}
+
+.card {
+  background: linear-gradient(145deg, #1c1c1c, #101010);
+  border: 1px solid #383838;
+  border-radius: 13px;
+  padding: 20px;
+  margin: 18px 0;
+  box-shadow: 0 5px 18px #00000055;
+}
+
+button, .botao {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff1738, #a90020);
+  color: white;
+  border: 1px solid var(--vermelho);
+  padding: 12px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 5px 0;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  transition: .2s;
+}
+
+button:hover, .botao:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px #ff173866;
+}
+
+#sair {
+  background: #151515;
+  border: 1px solid #555;
+}
+
+#sair:hover {
+  border-color: var(--vermelho);
+}
+
+.botao {
+  display: block;
+  width: 100%;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+  transform: none;
+}
+
+.item {
+  border-bottom: 1px solid #383838;
+  padding: 12px 0;
+  line-height: 1.6;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.status {
+  color: var(--vermelho);
+  font-weight: bold;
+}
+
+.aviso {
+  background: #191919;
+  border-left: 4px solid var(--vermelho);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 12px 0;
+}
+
+.aviso p {
+  line-height: 1.5;
+}
+
+.lido {
+  opacity: 0.6;
+}
+
+#conteudo {
+  display: none;
+}
+
+#mensagem, #mensagemAvisos {
+  color: var(--prata);
+}
+
+#email {
+  overflow-wrap: anywhere;
+  color: var(--cinza);
+}
+
+#estabelecimento p,
+#plano p {
+  color: #ccc;
+  line-height: 1.5;
+}
+
+@media (max-width: 500px) {
+  header {
+    padding: 18px 14px;
+  }
+
+  header h1 {
+    font-size: 22px;
+  }
+
+  header button {
+    padding: 10px 12px;
+  }
+
+  h2 {
+    font-size: 23px;
+  }
+
+  .card {
+    padding: 17px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-simbolo">N</div>
+    <div class="logo-texto">NIGHT<span>life</span></div>
+  </div>
+
+  <button id="sair">Sair da conta</button>
+</header>
+
+<main>
+
+<div class="card" id="verificando">
+  Verificando sua conta...
+</div>
+
+<div id="conteudo">
+
+  <h2>Painel do proprietário</h2>
+
+  <div class="card">
+    <h3>Minha conta</h3>
+    <p id="email"></p>
+  </div>
+
+  <div class="card">
+    <h3>Meu estabelecimento</h3>
+    <div id="estabelecimento">Carregando...</div>
+  </div>
+
+  <div class="card">
+    <h3>Meu plano</h3>
+    <div id="plano">Carregando...</div>
+  </div>
+
+  <div class="card">
+    <h3>Central de notificações</h3>
+    <p id="mensagemAvisos">Carregando avisos...</p>
+    <div id="avisos"></div>
+  </div>
+
+  <div class="card">
+    <h3>Eventos</h3>
+    <p>
+      Divulgue os eventos do seu estabelecimento
+      no NIGHTlife.
+    </p>
+
+    <a href="eventos.html" class="botao">
+      Cadastrar evento
+    </a>
+  </div>
+
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL =
+"https://crmfxxsrhdncvaaxezvz.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+let usuarioAtual = null;
+
+async function iniciarPainel() {
+
+  const { data, error } =
+    await supabaseClient.auth.getSession();
+
+  if (error || !data.session) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  usuarioAtual = data.session.user;
+
+  document.getElementById("email").textContent =
+    "Conectado como: " + usuarioAtual.email;
+
+  document.getElementById("verificando").style.display = "none";
+  document.getElementById("conteudo").style.display = "block";
+
+  await carregarEstabelecimento();
+  await carregarAvisos();
+}
+
+async function carregarEstabelecimento() {
+
+  const area = document.getElementById("estabelecimento");
+  const plano = document.getElementById("plano");
+
+  area.innerHTML = "";
+  plano.innerHTML = "";
+
+  const { data, error } = await supabaseClient
+    .from("estabelecimentos")
+    .select("id,nome,endereco,telefone,horario_funcionamento,status_plano,mensalidade,teste_termina_em,vencimento_em,tolerancia_ate")
+    .eq("usuario_id", usuarioAtual.id);
+
+  if (error) {
+    area.textContent = "Erro: " + error.message;
+    plano.textContent = "Não foi possível carregar o plano.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    area.textContent =
+      "Nenhum estabelecimento está vinculado a esta conta.";
+
+    plano.textContent = "Plano não encontrado.";
+    return;
+  }
+
+  data.forEach(item => {
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    const nome = document.createElement("h3");
+    nome.textContent = item.nome || "Sem nome";
+
+    const endereco = document.createElement("p");
+    endereco.textContent =
+      "Endereço: " + (item.endereco || "Não informado");
+
+    const telefone = document.createElement("p");
+    telefone.textContent =
+      "Telefone: " + (item.telefone || "Não informado");
+
+    const horario = document.createElement("p");
+    horario.textContent =
+      "Funcionamento: " +
+      (item.horario_funcionamento || "Não informado");
+
+    div.append(nome, endereco, telefone, horario);
+    area.appendChild(div);
+
+    const status = document.createElement("p");
+    status.className = "status";
+    status.textContent =
+      "Situação: " + (item.status_plano || "Não definido");
+
+    const mensalidade = document.createElement("p");
+    mensalidade.textContent =
+      "Mensalidade: R$ " +
+      Number(item.mensalidade || 25)
+        .toFixed(2)
+        .replace(".", ",");
+
+    plano.append(status, mensalidade);
+
+    if (item.status_plano === "teste" && item.teste_termina_em) {
+
+      const dataTeste = document.createElement("p");
+
+      dataTeste.textContent =
+        "Fim do teste grátis: " +
+        new Date(item.teste_termina_em)
+          .toLocaleDateString("pt-BR");
+
+      plano.appendChild(dataTeste);
+    }
+
+    if (item.vencimento_em) {
+
+      const vencimento = document.createElement("p");
+
+      vencimento.textContent =
+        "Vencimento: " +
+        new Date(item.vencimento_em)
+          .toLocaleDateString("pt-BR");
+
+      plano.appendChild(vencimento);
+    }
+
+    if (item.status_plano === "tolerancia" && item.tolerancia_ate) {
+
+      const tolerancia = document.createElement("p");
+
+      tolerancia.textContent =
+        "Fim da tolerância: " +
+        new Date(item.tolerancia_ate)
+          .toLocaleDateString("pt-BR");
+
+      plano.appendChild(tolerancia);
+    }
+
+  });
+}
+
+async function carregarAvisos() {
+
+  const lista = document.getElementById("avisos");
+  const mensagem = document.getElementById("mensagemAvisos");
+
+  lista.innerHTML = "";
+  mensagem.textContent = "Buscando notificações...";
+
+  const { data, error } = await supabaseClient
+    .from("notificacoes_nightlife")
+    .select("id,mensagem,tipo,criada_em,lida")
+    .eq("usuario_id", usuarioAtual.id)
+    .order("criada_em", { ascending: false });
+
+  if (error) {
+    mensagem.textContent =
+      "Erro ao buscar avisos: " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    mensagem.textContent =
+      "Você ainda não tem notificações.";
+    return;
+  }
+
+  mensagem.textContent =
+    "Você tem " + data.length + " aviso(s).";
+
+  data.forEach(aviso => {
+
+    const div = document.createElement("div");
+    div.className = "aviso";
+
+    if (aviso.lida) {
+      div.classList.add("lido");
+    }
+
+    const texto = document.createElement("p");
+    texto.textContent = aviso.mensagem;
+
+    const dataAviso = document.createElement("small");
+
+    dataAviso.textContent =
+      "Recebido em: " +
+      new Date(aviso.criada_em).toLocaleString("pt-BR");
+
+    div.append(texto, dataAviso);
+
+    if (!aviso.lida) {
+
+      const botao = document.createElement("button");
+      botao.textContent = "Marcar como lido";
+
+      botao.addEventListener("click", async () => {
+
+        botao.disabled = true;
+
+        const { error } = await supabaseClient
+          .from("notificacoes_nightlife")
+          .update({ lida: true })
+          .eq("id", aviso.id)
+          .eq("usuario_id", usuarioAtual.id);
+
+        if (error) {
+          alert("Erro: " + error.message);
+          botao.disabled = false;
+          return;
+        }
+
+        await carregarAvisos();
+
+      });
+
+      div.appendChild(botao);
+
+    } else {
+
+      const lido = document.createElement("p");
+      lido.textContent = "Aviso já lido.";
+      div.appendChild(lido);
+
+    }
+
+    lista.appendChild(div);
+
+  });
+}
+
+document.getElementById("sair").addEventListener("click", async () => {
+
+  await supabaseClient.auth.signOut();
+
+  window.location.href = "login.html";
+
+});
+
+iniciarPainel();
+</script>
+
+</body>
+</html>

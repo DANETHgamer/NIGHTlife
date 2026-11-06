@@ -1,0 +1,919 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<title>NIGHTlife | A noite começa aqui</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Oswald:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+
+:root {
+    --preto: #080808;
+    --fundo: #101010;
+    --card: #171717;
+    --vermelho: #ff1738;
+    --vermelho-escuro: #a90020;
+    --prata: #e5e5e5;
+    --cinza: #aaa;
+}
+
+body {
+    margin: 0;
+    background: var(--preto);
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    padding: 35px 15px 30px;
+    background: radial-gradient(ellipse at center, #351018 0%, #16090d 40%, #080808 78%);
+    border-bottom: 2px solid var(--vermelho);
+}
+
+header::before,
+header::after {
+    content: "";
+    position: absolute;
+    width: 220px;
+    height: 2px;
+    background: var(--vermelho);
+    box-shadow: 0 0 12px var(--vermelho);
+    transform: rotate(-35deg);
+}
+
+header::before {
+    top: 35px;
+    left: -70px;
+}
+
+header::after {
+    bottom: 35px;
+    right: -70px;
+}
+
+.logo {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.logo-simbolo {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--vermelho);
+    border-radius: 50%;
+    color: var(--prata);
+    font-family: "Orbitron", sans-serif;
+    font-size: 30px;
+    font-weight: 900;
+    box-shadow: 0 0 15px #ff173855;
+    transform: rotate(-8deg);
+}
+
+.logo-texto {
+    font-family: "Orbitron", sans-serif;
+    font-size: clamp(29px, 7vw, 48px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    color: var(--prata);
+    text-shadow: 0 2px 8px #ffffff55;
+}
+
+.logo-texto span {
+    color: var(--vermelho);
+    font-family: "Pacifico", cursive;
+    font-weight: normal;
+    letter-spacing: -2px;
+    text-shadow: 0 0 12px #ff173888;
+}
+
+.slogan {
+    position: relative;
+    z-index: 1;
+    margin: 17px 0 0;
+    color: #eee;
+    font-family: "Oswald", sans-serif;
+    font-size: 17px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+}
+
+.slogan span { color: var(--vermelho); }
+
+main {
+    width: 100%;
+    max-width: 1100px;
+    margin: auto;
+    padding: 25px 16px 45px;
+}
+
+.acoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 13px;
+    margin-bottom: 38px;
+}
+
+.botao {
+    display: inline-block;
+    padding: 14px 21px;
+    border: 1px solid var(--vermelho);
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ff1738, #a90020);
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    transition: .2s;
+}
+
+.botao:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 18px #ff173866;
+}
+
+.botao.secundario {
+    background: #151515;
+    border: 1px solid #555;
+}
+
+.botao.secundario:hover { border-color: var(--vermelho); }
+
+.secao-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 38px 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #333;
+}
+
+.secao-titulo .icone {
+    color: var(--vermelho);
+    font-size: 25px;
+}
+
+.secao-titulo h2 {
+    margin: 0;
+    font-family: "Oswald", sans-serif;
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 18px;
+}
+
+.card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, #1c1c1c, #101010);
+    border: 1px solid #353535;
+    border-radius: 13px;
+    padding: 21px;
+    transition: .25s;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--vermelho);
+    box-shadow: 0 0 10px #ff173855;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    border-color: var(--vermelho);
+    box-shadow: 0 8px 25px #00000088;
+}
+
+.card h3 {
+    color: var(--prata);
+    font-family: "Oswald", sans-serif;
+    font-size: 22px;
+    margin: 0 0 16px;
+    letter-spacing: .5px;
+}
+
+.card p {
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    margin: 9px 0;
+}
+
+.card p::first-letter { color: var(--vermelho); }
+
+.mensagem {
+    color: var(--cinza);
+    margin: 15px 0;
+    font-size: 14px;
+}
+
+/* AVALIAÇÕES */
+
+.avaliacoes {
+    margin-top: 22px;
+    padding-top: 17px;
+    border-top: 1px solid #444;
+}
+
+.avaliacoes h4 {
+    margin: 0 0 12px;
+    color: var(--prata);
+    font-family: "Oswald", sans-serif;
+    font-size: 19px;
+}
+
+.media-nota {
+    color: #ffc928;
+    font-size: 15px;
+    margin-bottom: 14px;
+}
+
+.estrelas {
+    color: #ffc928;
+    letter-spacing: 2px;
+    font-size: 17px;
+}
+
+.form-avaliacao {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.form-avaliacao label {
+    color: #ccc;
+    font-size: 13px;
+}
+
+.form-avaliacao input,
+.form-avaliacao select,
+.form-avaliacao textarea {
+    width: 100%;
+    padding: 11px;
+    border-radius: 7px;
+    border: 1px solid #444;
+    background: #0c0c0c;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.form-avaliacao textarea {
+    min-height: 85px;
+    resize: vertical;
+}
+
+.form-avaliacao input:focus,
+.form-avaliacao select:focus,
+.form-avaliacao textarea:focus {
+    outline: none;
+    border-color: var(--vermelho);
+}
+
+.botao-avaliar {
+    background: linear-gradient(135deg, #ff1738, #a90020);
+    border: 1px solid var(--vermelho);
+    border-radius: 7px;
+    padding: 11px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.botao-avaliar:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.lista-avaliacoes {
+    margin-top: 16px;
+}
+
+.avaliacao-item {
+    background: #101010;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+}
+
+.avaliacao-item strong {
+    color: var(--prata);
+    font-size: 14px;
+}
+
+.avaliacao-item p {
+    margin: 7px 0;
+    color: #ccc;
+    overflow-wrap: anywhere;
+}
+
+.avaliacao-data {
+    color: #777;
+    font-size: 11px;
+}
+
+.sem-avaliacoes {
+    color: #888;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+footer {
+    text-align: center;
+    padding: 25px 15px;
+    border-top: 1px solid #333;
+    background: #0c0c0c;
+}
+
+footer strong {
+    color: var(--vermelho);
+    font-family: "Orbitron", sans-serif;
+    letter-spacing: 2px;
+}
+
+footer p {
+    color: #888;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+@media (max-width: 500px) {
+    header { padding: 30px 10px; }
+
+    .logo-simbolo {
+        width: 45px;
+        height: 45px;
+        font-size: 24px;
+    }
+
+    .slogan {
+        font-size: 12px;
+        letter-spacing: 3px;
+    }
+
+    .acoes { flex-direction: column; }
+
+    .botao { width: 100%; }
+
+    .lista { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <div class="logo-simbolo">N</div>
+        <div class="logo-texto">NIGHT<span>life</span></div>
+    </div>
+
+    <p class="slogan">
+        A noite começa <span>aqui</span>
+    </p>
+</header>
+
+<main>
+
+    <div class="acoes">
+        <a class="botao" href="cadastro.html">
+            + Cadastrar estabelecimento
+        </a>
+
+        <a class="botao secundario" href="login.html">
+            Área do proprietário
+        </a>
+    </div>
+
+    <section>
+        <div class="secao-titulo">
+            <span class="icone">📍</span>
+            <h2>Estabelecimentos</h2>
+        </div>
+
+        <p id="mensagemEstabelecimentos" class="mensagem">
+            Carregando estabelecimentos...
+        </p>
+
+        <div id="listaEstabelecimentos" class="lista"></div>
+    </section>
+
+    <section>
+        <div class="secao-titulo">
+            <span class="icone">🎉</span>
+            <h2>Eventos e festas</h2>
+        </div>
+
+        <p id="mensagemEventos" class="mensagem">
+            Carregando eventos...
+        </p>
+
+        <div id="listaEventos" class="lista"></div>
+    </section>
+
+</main>
+
+<footer>
+    <strong>NIGHTlife</strong>
+    <p>SUA CIDADE. SUA NOITE. SEU ROLÊ.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL =
+"https://crmfxxsrhdncvaaxezvz.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+let estabelecimentosVisiveis = [];
+let avaliacoesPorEstabelecimento = {};
+
+/* IDENTIFICADOR DO NAVEGADOR */
+
+function obterIdentificadorNavegador() {
+
+    const chave = "nightlife_identificador_avaliacoes";
+
+    try {
+        let identificador = localStorage.getItem(chave);
+
+        if (identificador) {
+            return identificador;
+        }
+
+        if (window.crypto && typeof crypto.randomUUID === "function") {
+            identificador = crypto.randomUUID();
+        } else {
+            identificador =
+                "nl-" +
+                Date.now().toString(36) +
+                "-" +
+                Math.random().toString(36).substring(2) +
+                Math.random().toString(36).substring(2);
+        }
+
+        localStorage.setItem(chave, identificador);
+
+        return identificador;
+
+    } catch (erro) {
+        console.error("Não foi possível salvar o identificador:", erro);
+
+        if (!window.identificadorNightlife) {
+            window.identificadorNightlife =
+                "nl-" +
+                Date.now().toString(36) +
+                "-" +
+                Math.random().toString(36).substring(2);
+        }
+
+        return window.identificadorNightlife;
+    }
+}
+
+function criarEstrelas(nota) {
+    return "★".repeat(nota) + "☆".repeat(5 - nota);
+}
+
+function formatarData(data) {
+    if (!data) return "";
+
+    return new Date(data).toLocaleDateString("pt-BR");
+}
+
+async function carregarEstabelecimentos() {
+
+    const mensagem = document.getElementById("mensagemEstabelecimentos");
+    const lista = document.getElementById("listaEstabelecimentos");
+
+    mensagem.textContent = "Carregando estabelecimentos...";
+    lista.innerHTML = "";
+
+    const { data, error } = await supabaseClient
+        .from("estabelecimentos")
+        .select("id,nome,endereco,telefone,horario_funcionamento")
+        .in("status_plano", ["teste", "ativo", "tolerancia"])
+        .order("criado_em", { ascending: false });
+
+    if (error) {
+        mensagem.textContent =
+            "Erro ao carregar estabelecimentos: " + error.message;
+        return;
+    }
+
+    estabelecimentosVisiveis = data || [];
+
+    if (estabelecimentosVisiveis.length === 0) {
+        mensagem.textContent =
+            "Nenhum estabelecimento disponível no momento.";
+        return;
+    }
+
+    mensagem.textContent =
+        estabelecimentosVisiveis.length +
+        " estabelecimento(s) encontrado(s).";
+
+    const ids = estabelecimentosVisiveis.map(item => item.id);
+
+    await carregarAvaliacoes(ids);
+
+    estabelecimentosVisiveis.forEach(item => {
+
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = item.nome || "Sem nome";
+
+        const endereco = document.createElement("p");
+        endereco.textContent =
+            "Endereço: " + (item.endereco || "Não informado");
+
+        const telefone = document.createElement("p");
+        telefone.textContent =
+            "Telefone: " + (item.telefone || "Não informado");
+
+        const horario = document.createElement("p");
+        horario.textContent =
+            "Funcionamento: " +
+            (item.horario_funcionamento || "Não informado");
+
+        card.append(titulo, endereco, telefone, horario);
+
+        const areaAvaliacoes = criarAreaAvaliacoes(item);
+        card.appendChild(areaAvaliacoes);
+
+        lista.appendChild(card);
+    });
+}
+
+async function carregarAvaliacoes(ids) {
+
+    avaliacoesPorEstabelecimento = {};
+
+    ids.forEach(id => {
+        avaliacoesPorEstabelecimento[id] = [];
+    });
+
+    const { data, error } = await supabaseClient
+        .from("avaliacoes")
+        .select("id,estabelecimento_id,nome,nota,comentario,criado_em")
+        .in("estabelecimento_id", ids)
+        .order("criado_em", { ascending: false })
+        .limit(500);
+
+    if (error) {
+        console.error("Erro ao carregar avaliações:", error.message);
+        return;
+    }
+
+    (data || []).forEach(avaliacao => {
+        if (avaliacoesPorEstabelecimento[avaliacao.estabelecimento_id]) {
+            avaliacoesPorEstabelecimento[
+                avaliacao.estabelecimento_id
+            ].push(avaliacao);
+        }
+    });
+}
+
+function criarAreaAvaliacoes(estabelecimento) {
+
+    const area = document.createElement("div");
+    area.className = "avaliacoes";
+
+    const titulo = document.createElement("h4");
+    titulo.textContent = "⭐ Avaliações dos visitantes";
+
+    const avaliacoes =
+        avaliacoesPorEstabelecimento[estabelecimento.id] || [];
+
+    const media = avaliacoes.length
+        ? avaliacoes.reduce((soma, item) => soma + item.nota, 0) /
+          avaliacoes.length
+        : 0;
+
+    const resumo = document.createElement("div");
+    resumo.className = "media-nota";
+
+    if (avaliacoes.length > 0) {
+        resumo.textContent =
+            "★ " + media.toFixed(1) + " de 5 (" +
+            avaliacoes.length + " avaliação(ões))";
+    } else {
+        resumo.textContent = "Ainda não recebeu avaliações.";
+    }
+
+    const formulario = document.createElement("form");
+    formulario.className = "form-avaliacao";
+
+    const nomeLabel = document.createElement("label");
+    nomeLabel.textContent = "Seu nome (opcional)";
+
+    const nomeInput = document.createElement("input");
+    nomeInput.type = "text";
+    nomeInput.maxLength = 60;
+    nomeInput.placeholder = "Como podemos chamar você?";
+
+    nomeLabel.appendChild(nomeInput);
+
+    const notaLabel = document.createElement("label");
+    notaLabel.textContent = "Sua nota";
+
+    const notaSelect = document.createElement("select");
+    notaSelect.required = true;
+
+    const opcaoInicial = document.createElement("option");
+    opcaoInicial.value = "";
+    opcaoInicial.textContent = "Escolha de 1 a 5 estrelas";
+    opcaoInicial.disabled = true;
+    opcaoInicial.selected = true;
+    notaSelect.appendChild(opcaoInicial);
+
+    for (let i = 5; i >= 1; i--) {
+        const opcao = document.createElement("option");
+        opcao.value = String(i);
+        opcao.textContent = criarEstrelas(i) + " - " + i + " estrela(s)";
+        notaSelect.appendChild(opcao);
+    }
+
+    notaLabel.appendChild(notaSelect);
+
+    const comentarioLabel = document.createElement("label");
+    comentarioLabel.textContent = "Seu comentário";
+
+    const comentarioInput = document.createElement("textarea");
+    comentarioInput.maxLength = 1000;
+    comentarioInput.required = true;
+    comentarioInput.placeholder =
+        "Conte como foi sua experiência neste lugar...";
+
+    comentarioLabel.appendChild(comentarioInput);
+
+    const botao = document.createElement("button");
+    botao.type = "submit";
+    botao.className = "botao-avaliar";
+    botao.textContent = "Enviar avaliação";
+
+    formulario.append(
+        nomeLabel,
+        notaLabel,
+        comentarioLabel,
+        botao
+    );
+
+    const listaAvaliacoes = document.createElement("div");
+    listaAvaliacoes.className = "lista-avaliacoes";
+
+    if (avaliacoes.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "sem-avaliacoes";
+        vazio.textContent =
+            "Seja a primeira pessoa a avaliar este estabelecimento!";
+        listaAvaliacoes.appendChild(vazio);
+    } else {
+
+        avaliacoes.slice(0, 5).forEach(avaliacao => {
+
+            const item = document.createElement("div");
+            item.className = "avaliacao-item";
+
+            const nome = document.createElement("strong");
+            nome.textContent = avaliacao.nome || "Visitante";
+
+            const estrelas = document.createElement("div");
+            estrelas.className = "estrelas";
+            estrelas.textContent = criarEstrelas(avaliacao.nota);
+
+            const comentario = document.createElement("p");
+            comentario.textContent = avaliacao.comentario;
+
+            const data = document.createElement("div");
+            data.className = "avaliacao-data";
+            data.textContent = formatarData(avaliacao.criado_em);
+
+            item.append(nome, estrelas, comentario, data);
+            listaAvaliacoes.appendChild(item);
+        });
+
+        if (avaliacoes.length > 5) {
+            const mais = document.createElement("div");
+            mais.className = "sem-avaliacoes";
+            mais.textContent =
+                "Mostrando as 5 avaliações mais recentes.";
+            listaAvaliacoes.appendChild(mais);
+        }
+    }
+
+    formulario.addEventListener("submit", async (evento) => {
+
+        evento.preventDefault();
+
+        if (botao.disabled) return;
+
+        const nome = nomeInput.value.trim();
+        const nota = Number(notaSelect.value);
+        const comentario = comentarioInput.value.trim();
+
+        if (!Number.isInteger(nota) || nota < 1 || nota > 5) {
+            alert("Escolha uma nota de 1 a 5 estrelas.");
+            return;
+        }
+
+        if (!comentario || comentario.length > 1000) {
+            alert("Escreva um comentário de até 1000 caracteres.");
+            return;
+        }
+
+        if (nome.length > 60) {
+            alert("O nome pode ter no máximo 60 caracteres.");
+            return;
+        }
+
+        botao.disabled = true;
+        botao.textContent = "Enviando...";
+
+        const identificador = obterIdentificadorNavegador();
+
+        const { error } = await supabaseClient.rpc(
+            "enviar_avaliacao_nightlife",
+            {
+                p_estabelecimento_id: estabelecimento.id,
+                p_nome: nome || "Visitante",
+                p_nota: nota,
+                p_comentario: comentario,
+                p_identificador: identificador
+            }
+        );
+
+        if (error) {
+
+            console.error("Erro ao enviar avaliação:", error);
+
+            if (
+                error.message &&
+                error.message.includes("24 horas")
+            ) {
+                alert(
+                    "Você já avaliou este estabelecimento. " +
+                    "Será possível avaliar novamente após 24 horas."
+                );
+            } else {
+                alert(
+                    "Não foi possível enviar sua avaliação: " +
+                    error.message
+                );
+            }
+
+            botao.disabled = false;
+            botao.textContent = "Enviar avaliação";
+            return;
+        }
+
+        alert("Sua avaliação foi enviada com sucesso!");
+
+        await carregarEstabelecimentos();
+    });
+
+    area.append(
+        titulo,
+        resumo,
+        formulario,
+        listaAvaliacoes
+    );
+
+    return area;
+}
+
+async function carregarEventos() {
+
+    const mensagem = document.getElementById("mensagemEventos");
+    const lista = document.getElementById("listaEventos");
+
+    mensagem.textContent = "Carregando eventos...";
+    lista.innerHTML = "";
+
+    if (estabelecimentosVisiveis.length === 0) {
+        mensagem.textContent =
+            "Não há eventos disponíveis no momento.";
+        return;
+    }
+
+    const ids = estabelecimentosVisiveis.map(item => item.id);
+
+    const nomes = {};
+
+    estabelecimentosVisiveis.forEach(item => {
+        nomes[item.id] = item.nome;
+    });
+
+    const { data, error } = await supabaseClient
+        .from("eventos")
+        .select("id,nome,descricao,data_evento,horario,estabelecimento_id")
+        .in("estabelecimento_id", ids)
+        .order("data_evento", { ascending: true });
+
+    if (error) {
+        mensagem.textContent =
+            "Erro ao carregar eventos: " + error.message;
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        mensagem.textContent =
+            "Nenhum evento cadastrado ainda.";
+        return;
+    }
+
+    mensagem.textContent =
+        data.length + " evento(s) encontrado(s).";
+
+    data.forEach(item => {
+
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = item.nome || "Evento sem nome";
+
+        const local = document.createElement("p");
+        local.textContent =
+            "Local: " +
+            (nomes[item.estabelecimento_id] ||
+             "Estabelecimento não informado");
+
+        const descricao = document.createElement("p");
+        descricao.textContent =
+            item.descricao || "Sem descrição.";
+
+        const dataEvento = document.createElement("p");
+        dataEvento.textContent =
+            "Data: " +
+            (item.data_evento
+                ? new Date(item.data_evento + "T12:00:00")
+                    .toLocaleDateString("pt-BR")
+                : "Não informada");
+
+        const horario = document.createElement("p");
+        horario.textContent =
+            "Horário: " + (item.horario || "Não informado");
+
+        card.append(
+            titulo,
+            local,
+            descricao,
+            dataEvento,
+            horario
+        );
+
+        lista.appendChild(card);
+    });
+}
+
+async function iniciarPagina() {
+    await carregarEstabelecimentos();
+    await carregarEventos();
+}
+
+iniciarPagina();
+</script>
+
+</body>
+</html>

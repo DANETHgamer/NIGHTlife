@@ -188,8 +188,26 @@ button:disabled {
   display: none;
 }
 
-#mensagem, #mensagemAvisos {
+#mensagem, #mensagemAvisos, #mensagemPix {
   color: var(--prata);
+}
+
+#mensagemPix {
+  min-height: 20px;
+}
+
+#chavePixExibida {
+  display: block;
+  padding: 14px;
+  margin: 12px 0;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #080808;
+  color: white;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: all;
 }
 
 #email {
@@ -264,6 +282,16 @@ button:disabled {
   </div>
 
   <div class="card">
+    <h3>Pagamento da mensalidade</h3>
+    <p>Use a chave Pix abaixo para pagar a mensalidade do NIGHTlife.</p>
+    <p id="mensagemPix" role="status" aria-live="polite">
+      Carregando chave Pix...
+    </p>
+    <div id="chavePixExibida" hidden></div>
+    <button id="copiarPix" type="button" hidden>Copiar chave Pix</button>
+  </div>
+
+  <div class="card">
     <h3>Central de notificações</h3>
     <p id="mensagemAvisos">Carregando avisos...</p>
     <div id="avisos"></div>
@@ -288,10 +316,10 @@ button:disabled {
 
 <script>
 const SUPABASE_URL =
-"https://crmfxxsrhdncvaaxezvz.supabase.co";
+  "https://crmfxxsrhdncvaaxezvz.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+  "sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
@@ -301,7 +329,6 @@ const supabaseClient = window.supabase.createClient(
 let usuarioAtual = null;
 
 async function iniciarPainel() {
-
   const { data, error } =
     await supabaseClient.auth.getSession();
 
@@ -319,11 +346,11 @@ async function iniciarPainel() {
   document.getElementById("conteudo").style.display = "block";
 
   await carregarEstabelecimento();
+  await carregarChavePix();
   await carregarAvisos();
 }
 
 async function carregarEstabelecimento() {
-
   const area = document.getElementById("estabelecimento");
   const plano = document.getElementById("plano");
 
@@ -350,7 +377,6 @@ async function carregarEstabelecimento() {
   }
 
   data.forEach(item => {
-
     const div = document.createElement("div");
     div.className = "item";
 
@@ -388,7 +414,6 @@ async function carregarEstabelecimento() {
     plano.append(status, mensalidade);
 
     if (item.status_plano === "teste" && item.teste_termina_em) {
-
       const dataTeste = document.createElement("p");
 
       dataTeste.textContent =
@@ -400,7 +425,6 @@ async function carregarEstabelecimento() {
     }
 
     if (item.vencimento_em) {
-
       const vencimento = document.createElement("p");
 
       vencimento.textContent =
@@ -412,7 +436,6 @@ async function carregarEstabelecimento() {
     }
 
     if (item.status_plano === "tolerancia" && item.tolerancia_ate) {
-
       const tolerancia = document.createElement("p");
 
       tolerancia.textContent =
@@ -422,12 +445,70 @@ async function carregarEstabelecimento() {
 
       plano.appendChild(tolerancia);
     }
-
   });
 }
 
-async function carregarAvisos() {
+async function carregarChavePix() {
+  const mensagem = document.getElementById("mensagemPix");
+  const exibicao = document.getElementById("chavePixExibida");
+  const botaoCopiar = document.getElementById("copiarPix");
 
+  mensagem.textContent = "Carregando chave Pix...";
+  exibicao.hidden = true;
+  botaoCopiar.hidden = true;
+
+  const { data, error } = await supabaseClient
+    .from("configuracoes_plataforma")
+    .select("chave_pix")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erro ao carregar chave Pix:", error);
+    mensagem.textContent =
+      "Não foi possível carregar a chave Pix. Tente atualizar a página.";
+    return;
+  }
+
+  const chavePix = data?.chave_pix?.trim();
+
+  if (!chavePix) {
+    mensagem.textContent =
+      "A chave Pix ainda não foi cadastrada pelo administrador.";
+    return;
+  }
+
+  exibicao.textContent = chavePix;
+  exibicao.hidden = false;
+  botaoCopiar.hidden = false;
+  mensagem.textContent =
+    "Confira a chave Pix antes de fazer o pagamento.";
+}
+
+async function copiarChavePix() {
+  const chavePix = document
+    .getElementById("chavePixExibida")
+    .textContent
+    .trim();
+
+  const botao = document.getElementById("copiarPix");
+  const mensagem = document.getElementById("mensagemPix");
+
+  if (!chavePix) {
+    mensagem.textContent = "Não há chave Pix para copiar.";
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(chavePix);
+    mensagem.textContent = "Chave Pix copiada.";
+  } catch (erro) {
+    mensagem.textContent =
+      "Não foi possível copiar automaticamente. Selecione e copie a chave exibida.";
+  }
+}
+
+async function carregarAvisos() {
   const lista = document.getElementById("avisos");
   const mensagem = document.getElementById("mensagemAvisos");
 
@@ -456,7 +537,6 @@ async function carregarAvisos() {
     "Você tem " + data.length + " aviso(s).";
 
   data.forEach(aviso => {
-
     const div = document.createElement("div");
     div.className = "aviso";
 
@@ -468,7 +548,6 @@ async function carregarAvisos() {
     texto.textContent = aviso.mensagem;
 
     const dataAviso = document.createElement("small");
-
     dataAviso.textContent =
       "Recebido em: " +
       new Date(aviso.criada_em).toLocaleString("pt-BR");
@@ -476,12 +555,10 @@ async function carregarAvisos() {
     div.append(texto, dataAviso);
 
     if (!aviso.lida) {
-
       const botao = document.createElement("button");
       botao.textContent = "Marcar como lido";
 
       botao.addEventListener("click", async () => {
-
         botao.disabled = true;
 
         const { error } = await supabaseClient
@@ -497,30 +574,25 @@ async function carregarAvisos() {
         }
 
         await carregarAvisos();
-
       });
 
       div.appendChild(botao);
-
     } else {
-
       const lido = document.createElement("p");
       lido.textContent = "Aviso já lido.";
       div.appendChild(lido);
-
     }
 
     lista.appendChild(div);
-
   });
 }
 
+document.getElementById("copiarPix")
+  .addEventListener("click", copiarChavePix);
+
 document.getElementById("sair").addEventListener("click", async () => {
-
   await supabaseClient.auth.signOut();
-
   window.location.href = "login.html";
-
 });
 
 iniciarPainel();

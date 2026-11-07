@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -229,6 +228,51 @@ main {
 }
 
 .card p::first-letter { color: var(--vermelho); }
+
+.oferta {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px solid #5a2630;
+    border-radius: 9px;
+    background: #190d10;
+}
+
+.oferta h4 {
+    margin: 0 0 8px;
+    color: #ff526b;
+    font-family: "Oswald", sans-serif;
+    font-size: 19px;
+}
+
+.oferta p { margin: 7px 0; }
+
+.botao-oferta {
+    width: 100%;
+    margin-top: 10px;
+    padding: 11px;
+    border: 1px solid var(--vermelho);
+    border-radius: 7px;
+    background: linear-gradient(135deg, #ff1738, #a90020);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.botao-oferta:disabled {
+    opacity: .55;
+    cursor: wait;
+}
+
+.codigo-resgate {
+    margin-top: 10px !important;
+    padding: 10px;
+    border: 1px dashed #ff526b;
+    border-radius: 7px;
+    color: white !important;
+    font-weight: bold;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
 
 .mensagem {
     color: var(--cinza);
@@ -465,6 +509,7 @@ const supabaseClient = window.supabase.createClient(
 
 let estabelecimentosVisiveis = [];
 let avaliacoesPorEstabelecimento = {};
+let ofertasPorEstabelecimento = {};
 
 /* IDENTIFICADOR DO NAVEGADOR */
 
@@ -506,6 +551,31 @@ function obterIdentificadorNavegador() {
         }
 
         return window.identificadorNightlife;
+    }
+}
+
+function obterIdentificadorMetricas() {
+    const chave = "nightlife_identificador_metricas";
+
+    try {
+        let identificador = localStorage.getItem(chave);
+        if (identificador) return identificador;
+
+        identificador = window.crypto && typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : "nl-" + Date.now().toString(36) + "-" +
+              Math.random().toString(36).substring(2) +
+              Math.random().toString(36).substring(2);
+
+        localStorage.setItem(chave, identificador);
+        return identificador;
+    } catch (erro) {
+        if (!window.identificadorMetricasNightlife) {
+            window.identificadorMetricasNightlife =
+                "nl-" + Date.now().toString(36) + "-" +
+                Math.random().toString(36).substring(2);
+        }
+        return window.identificadorMetricasNightlife;
     }
 }
 
@@ -554,6 +624,7 @@ async function carregarEstabelecimentos() {
     const ids = estabelecimentosVisiveis.map(item => item.id);
 
     await carregarAvaliacoes(ids);
+    await carregarOfertas(ids);
 
     estabelecimentosVisiveis.forEach(item => {
 
@@ -578,11 +649,124 @@ async function carregarEstabelecimentos() {
 
         card.append(titulo, endereco, telefone, horario);
 
+        (ofertasPorEstabelecimento[item.id] || []).forEach(oferta => {
+            const caixaOferta = document.createElement("div");
+            caixaOferta.className = "oferta";
+
+            const nomeOferta = document.createElement("h4");
+            nomeOferta.textContent = "🎁 " + oferta.titulo;
+
+            const descricaoOferta = document.createElement("p");
+            descricaoOferta.textContent = oferta.descricao;
+
+            const instrucaoOferta = document.createElement("p");
+            instrucaoOferta.textContent =
+                "Toque para gerar seu código e mostre-o no estabelecimento.";
+
+            const botaoResgate = document.createElement("button");
+            botaoResgate.type = "button";
+            botaoResgate.className = "botao-oferta";
+            botaoResgate.textContent = "Quero usar esta oferta";
+
+            const codigo = document.createElement("p");
+            codigo.className = "codigo-resgate";
+            codigo.hidden = true;
+
+            botaoResgate.addEventListener("click", async () => {
+                botaoResgate.disabled = true;
+                botaoResgate.textContent = "Gerando código...";
+
+                const { data: codigoGerado, error: erroResgate } =
+                    await supabaseClient.rpc("solicitar_resgate_oferta_nightlife", {
+                        p_oferta_id: oferta.id,
+                        p_visitante_id: obterIdentificadorMetricas()
+                    });
+
+                if (erroResgate) {
+                    console.error("Erro ao gerar código da oferta:", erroResgate);
+                    alert("Não foi possível gerar o código agora. Tente novamente.");
+                    botaoResgate.disabled = false;
+                    botaoResgate.textContent = "Quero usar esta oferta";
+                    return;
+                }
+
+                codigo.textContent = "Seu código: " + codigoGerado;
+                codigo.hidden = false;
+                instrucaoOferta.textContent =
+                    "Mostre este código ao responsável antes de pedir a oferta.";
+                botaoResgate.textContent = "Código gerado";
+            });
+
+            caixaOferta.append(
+                nomeOferta,
+                descricaoOferta,
+                instrucaoOferta,
+                botaoResgate,
+                codigo
+            );
+            card.appendChild(caixaOferta);
+
+            observarVisualizacaoOferta(caixaOferta, oferta.id);
+        });
+
         const areaAvaliacoes = criarAreaAvaliacoes(item);
         card.appendChild(areaAvaliacoes);
 
         lista.appendChild(card);
     });
+}
+
+async function carregarOfertas(ids) {
+    ofertasPorEstabelecimento = {};
+    ids.forEach(id => { ofertasPorEstabelecimento[id] = []; });
+
+    const { data, error } = await supabaseClient
+        .from("ofertas_nightlife")
+        .select("id,estabelecimento_id,titulo,descricao")
+        .eq("ativo", true)
+        .in("estabelecimento_id", ids)
+        .order("criado_em", { ascending: false });
+
+    if (error) {
+        console.error("Erro ao carregar ofertas:", error.message);
+        return;
+    }
+
+    (data || []).forEach(oferta => {
+        if (ofertasPorEstabelecimento[oferta.estabelecimento_id]) {
+            ofertasPorEstabelecimento[oferta.estabelecimento_id].push(oferta);
+        }
+    });
+}
+
+function observarVisualizacaoOferta(elemento, ofertaId) {
+    const registrar = async () => {
+        const { error } = await supabaseClient.rpc(
+            "registrar_visualizacao_oferta_nightlife",
+            {
+                p_oferta_id: ofertaId,
+                p_visitante_id: obterIdentificadorMetricas()
+            }
+        );
+
+        if (error) {
+            console.error("Erro ao registrar visualização da oferta:", error);
+        }
+    };
+
+    if (!("IntersectionObserver" in window)) {
+        registrar();
+        return;
+    }
+
+    const observador = new IntersectionObserver((entradas) => {
+        if (entradas.some(entrada => entrada.isIntersecting)) {
+            observador.disconnect();
+            registrar();
+        }
+    }, { threshold: 0.5 });
+
+    observador.observe(elemento);
 }
 
 async function carregarAvaliacoes(ids) {

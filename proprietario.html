@@ -72,9 +72,9 @@ async function iniciar(){
  el("conteudo").style.display="block";
  el("status").style.display="block";
  el("status").textContent="Carregando seus estabelecimentos...";
- const {data,error:erro} =await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
+ const {data: dadosEstabelecimentos,error:erro} =await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
  if(erro){el("estabelecimento").replaceChildren(texto("option","Erro ao carregar: "+erro.message));return}
- estabelecimentos=data||[];
+ estabelecimentos=dadosEstabelecimentos||[];
  const select=el("estabelecimento");select.replaceChildren();
  if(!estabelecimentos.length){select.append(texto("option","Nenhum estabelecimento vinculado"));el("dadosEstabelecimento").textContent="Ainda não encontramos estabelecimentos vinculados a esta conta.";el("status").style.display="none";return}
  estabelecimentos.forEach(item=>{const op=texto("option",item.nome||"Estabelecimento");op.value=item.id;select.append(op)});

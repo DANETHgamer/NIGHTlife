@@ -658,7 +658,7 @@ async function carregarEstabelecimentos() {
 
         card.append(titulo, endereco, telefone, horario);
         const acoesLocal=document.createElement("div");acoesLocal.className="acoes";
-        let tel=(item.telefone||"").replace(/\\D/g,"");if(tel&&tel.length<=11)tel="55"+tel;
+        let tel=(item.telefone||"").replace(/\D/g,"");if(tel&&tel.length<=11)tel="55"+tel;
         if(tel){const w=document.createElement("a");w.className="botao";w.href="https://wa.me/"+tel;w.target="_blank";w.rel="noopener";w.textContent="Chamar no WhatsApp";w.addEventListener("click",()=>registrarInteracao(item.id,"whatsapp"));acoesLocal.appendChild(w);}
         if(item.endereco){const r=document.createElement("a");r.className="botao secundario";r.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(item.endereco);r.target="_blank";r.rel="noopener";r.textContent="Como chegar";r.addEventListener("click",()=>registrarInteracao(item.id,"rota"));acoesLocal.appendChild(r);}
         if(acoesLocal.childElementCount)card.appendChild(acoesLocal);observarVisualizacaoEstabelecimento(card,item.id);

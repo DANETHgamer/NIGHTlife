@@ -416,6 +416,8 @@ async function iniciarPainel() {
   }
 
   usuarioAtual = data.session.user;
+  const { data: perfilMenu } = await supabaseClient.from("perfis").select("tipo").eq("id", usuarioAtual.id).maybeSingle();
+  if (perfilMenu?.tipo === "admin") document.getElementById("linkAdminMenu").hidden = false;
 
   document.getElementById("email").textContent =
     "Conectado como: " + usuarioAtual.email;

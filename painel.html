@@ -205,6 +205,7 @@ button:disabled {
     padding: 16px;
   }
 }
+.menu-flutuante{position:fixed;top:14px;right:16px;z-index:9999}.menu-abrir{width:48px;height:46px;border:1px solid #ff1738;border-radius:9px;background:#111;color:#fff;font-size:27px;cursor:pointer}.menu-links{display:none;position:absolute;right:0;top:54px;width:235px;padding:10px;background:#111;border:1px solid #ff1738;border-radius:12px;box-shadow:0 12px 35px #000}.menu-links.aberto{display:grid;gap:7px}.menu-links a{display:block;padding:12px;border:1px solid #383838;border-radius:8px;color:#eee;text-decoration:none;font-weight:bold;background:#191919}.menu-links a:hover{border-color:#ff1738;color:#ff526b}.menu-links .menu-admin[hidden]{display:none}
 </style>
 </head>
 
@@ -213,7 +214,7 @@ button:disabled {
 <header>
   <div class="logo">NIGHT<span>life</span></div>
   <button id="sair">Sair da conta</button>
-</header>
+</header><nav class="menu-flutuante" aria-label="Menu principal"><button class="menu-abrir" id="menuAbrir" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button><div class="menu-links" id="menuLinks"><a href="index.html">Área do cliente</a><a href="login.html">Área do proprietário</a><a href="painel.html" id="linkAdminMenu" class="menu-admin" hidden>Administrador</a></div></nav>
 
 <main>
 
@@ -274,7 +275,12 @@ const SUPABASE_KEY = "sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
-);
+);;
+const menuAbrir=document.getElementById("menuAbrir"),menuLinks=document.getElementById("menuLinks");
+menuAbrir?.addEventListener("click",()=>{const aberto=menuLinks.classList.toggle("aberto");menuAbrir.setAttribute("aria-expanded",String(aberto));});
+document.addEventListener("click",ev=>{if(!ev.target.closest(".menu-flutuante")){menuLinks?.classList.remove("aberto");menuAbrir?.setAttribute("aria-expanded","false");}});
+
+
 
 async function iniciarPainel() {
   const verificando = document.getElementById("verificando");
@@ -304,6 +310,7 @@ async function iniciarPainel() {
 
   document.getElementById("usuario").textContent =
     "Conectado como: " + usuario.email;
+  document.getElementById("linkAdminMenu").hidden = false;
 
   verificando.style.display = "none";
   document.getElementById("conteudo").style.display = "block";
@@ -318,10 +325,17 @@ async function carregarEstabelecimentos() {
   mensagem.textContent = "Carregando estabelecimentos...";
   lista.innerHTML = "";
 
-  const { data, error } = await supabaseClient
+  let consultaEstabelecimentos = await supabaseClient
     .from("estabelecimentos")
-    .select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em")
+    .select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo")
     .order("criado_em", { ascending: false });
+  if (consultaEstabelecimentos.error && /ativo/i.test(consultaEstabelecimentos.error.message || "")) {
+    consultaEstabelecimentos = await supabaseClient
+      .from("estabelecimentos")
+      .select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em")
+      .order("criado_em", { ascending: false });
+  }
+  const { data, error } = consultaEstabelecimentos;
 
   if (error) {
     mensagem.textContent = "Erro: " + error.message;
@@ -362,6 +376,8 @@ async function carregarEstabelecimentos() {
         new Date(item.vencimento_em).toLocaleDateString("pt-BR")
       : "Vencimento não definido";
 
+    const botaoAtivar=document.createElement("button");botaoAtivar.type="button";botaoAtivar.textContent=item.ativo===false?"Reativar estabelecimento":"Desativar estabelecimento";botaoAtivar.style.background=item.ativo===false?"#245c38":"#444";
+    botaoAtivar.addEventListener("click",async()=>{const novo=item.ativo===false;if(!confirm((novo?"Reativar ":"Desativar ")+(item.nome||"estabelecimento")+"? "+(novo?"Voltará a aparecer ao público.":"Deixará de aparecer ao público; os dados serão preservados.")))return;botaoAtivar.disabled=true;const {error}=await supabaseClient.rpc("alterar_status_estabelecimento_nightlife",{p_estabelecimento_id:item.id,p_ativo:novo});if(error){alert("Execute primeiro a migration SQL no Supabase. "+error.message);botaoAtivar.disabled=false;return;}await carregarEstabelecimentos();});
     const botao = document.createElement("button");
     botao.className = "renovar";
     botao.textContent = "Confirmar Pix e renovar";
@@ -411,6 +427,7 @@ async function carregarEstabelecimentos() {
     div.appendChild(detalhes);
     div.appendChild(status);
     div.appendChild(vencimento);
+    div.appendChild(botaoAtivar);
     div.appendChild(botao);
 
     lista.appendChild(div);

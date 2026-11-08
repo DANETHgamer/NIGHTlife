@@ -283,6 +283,7 @@ button:disabled {
     padding: 17px;
   }
 }
+.menu-flutuante{position:fixed;top:14px;right:16px;z-index:9999}.menu-abrir{width:48px;height:46px;border:1px solid #ff1738;border-radius:9px;background:#111;color:#fff;font-size:27px;cursor:pointer}.menu-links{display:none;position:absolute;right:0;top:54px;width:235px;padding:10px;background:#111;border:1px solid #ff1738;border-radius:12px;box-shadow:0 12px 35px #000}.menu-links.aberto{display:grid;gap:7px}.menu-links a{display:block;padding:12px;border:1px solid #383838;border-radius:8px;color:#eee;text-decoration:none;font-weight:bold;background:#191919}.menu-links a:hover{border-color:#ff1738;color:#ff526b}.menu-links .menu-admin[hidden]{display:none}
 </style>
 </head>
 
@@ -295,7 +296,7 @@ button:disabled {
   </div>
 
   <button id="sair">Sair da conta</button>
-</header>
+</header><nav class="menu-flutuante" aria-label="Menu principal"><button class="menu-abrir" id="menuAbrir" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button><div class="menu-links" id="menuLinks"><a href="index.html">Área do cliente</a><a href="login.html">Área do proprietário</a><a href="painel.html" id="linkAdminMenu" class="menu-admin" hidden>Administrador</a></div></nav>
 
 <main>
 
@@ -317,6 +318,7 @@ button:disabled {
     <div id="estabelecimento">Carregando...</div>
   </div>
 
+  <div class="card"><h3>Editar informações do estabelecimento</h3><p>Atualize os dados sem fazer novo cadastro.</p><div id="formulariosEdicao"></div><p id="mensagemEdicao" role="status"></p></div>
   <div class="card">
     <h3>Meu plano</h3>
     <div id="plano">Carregando...</div>
@@ -350,6 +352,7 @@ button:disabled {
     <button id="atualizarOfertas" type="button">Atualizar resultados</button>
   </div>
 
+  <div class="card"><h3>Resultados que o NIGHTlife está trazendo</h3><p>Visualizações e cliques indicam interesse. Códigos confirmados pelo estabelecimento indicam visitas presenciais.</p><div id="metricasProprietario">Carregando...</div></div>
   <div class="card">
     <h3>Pagamento da mensalidade</h3>
     <p>Use a chave Pix abaixo para pagar a mensalidade do NIGHTlife.</p>
@@ -393,7 +396,12 @@ const SUPABASE_KEY =
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
-);
+);;
+const menuAbrir=document.getElementById("menuAbrir"),menuLinks=document.getElementById("menuLinks");
+menuAbrir?.addEventListener("click",()=>{const aberto=menuLinks.classList.toggle("aberto");menuAbrir.setAttribute("aria-expanded",String(aberto));});
+document.addEventListener("click",ev=>{if(!ev.target.closest(".menu-flutuante")){menuLinks?.classList.remove("aberto");menuAbrir?.setAttribute("aria-expanded","false");}});
+
+
 
 let usuarioAtual = null;
 let estabelecimentosDoUsuario = [];
@@ -408,6 +416,8 @@ async function iniciarPainel() {
   }
 
   usuarioAtual = data.session.user;
+  const { data: perfilMenu } = await supabaseClient.from("perfis").select("tipo").eq("id", usuarioAtual.id).maybeSingle();
+  if (perfilMenu?.tipo === "admin") document.getElementById("linkAdminMenu").hidden = false;
 
   document.getElementById("email").textContent =
     "Conectado como: " + usuarioAtual.email;
@@ -416,6 +426,7 @@ async function iniciarPainel() {
   document.getElementById("conteudo").style.display = "block";
 
   await carregarEstabelecimento();
+  await carregarMetricasProprietario();
   await carregarOfertasProprietario();
   await carregarChavePix();
   await carregarAvisos();
@@ -428,10 +439,17 @@ async function carregarEstabelecimento() {
   area.innerHTML = "";
   plano.innerHTML = "";
 
-  const { data, error } = await supabaseClient
+  let consultaEstabelecimentos = await supabaseClient
     .from("estabelecimentos")
-    .select("id,nome,endereco,telefone,horario_funcionamento,status_plano,mensalidade,teste_termina_em,vencimento_em,tolerancia_ate")
+    .select("id,nome,endereco,telefone,horario_funcionamento,tipo,descricao,ativo,status_plano,mensalidade,teste_termina_em,vencimento_em,tolerancia_ate")
     .eq("usuario_id", usuarioAtual.id);
+  if (consultaEstabelecimentos.error && /ativo/i.test(consultaEstabelecimentos.error.message || "")) {
+    consultaEstabelecimentos = await supabaseClient
+      .from("estabelecimentos")
+      .select("id,nome,endereco,telefone,horario_funcionamento,tipo,descricao,status_plano,mensalidade,teste_termina_em,vencimento_em,tolerancia_ate")
+      .eq("usuario_id", usuarioAtual.id);
+  }
+  const { data, error } = consultaEstabelecimentos;
 
   if (error) {
     estabelecimentosDoUsuario = [];
@@ -473,6 +491,12 @@ async function carregarEstabelecimento() {
 
     div.append(nome, endereco, telefone, horario);
     area.appendChild(div);
+    const formEdicao=document.createElement("form");formEdicao.className="campos-oferta";
+    const campos=[["nome","Nome",item.nome||""],["endereco","Endereço",item.endereco||""],["telefone","Telefone / WhatsApp",item.telefone||""],["horario_funcionamento","Horário",item.horario_funcionamento||""],["tipo","Categoria",item.tipo||""],["descricao","Descrição",item.descricao||""]];
+    campos.forEach(([k,t,v])=>{const l=document.createElement("label");l.textContent=t;const c=k==="descricao"?document.createElement("textarea"):document.createElement("input");c.name=k;c.value=v;c.maxLength=k==="descricao"?1000:180;c.required=["nome","endereco"].includes(k);formEdicao.append(l,c);});
+    const save=document.createElement("button");save.type="submit";save.textContent="Salvar alterações";formEdicao.appendChild(save);
+    formEdicao.addEventListener("submit",async ev=>{ev.preventDefault();save.disabled=true;const values=Object.fromEntries(new FormData(formEdicao).entries());const {data:ok,error:err}=await supabaseClient.from("estabelecimentos").update(values).eq("id",item.id).eq("usuario_id",usuarioAtual.id).select("id").maybeSingle();save.disabled=false;if(err||!ok){document.getElementById("mensagemEdicao").textContent="Falha ao salvar. Verifique a política UPDATE do proprietário no Supabase. "+(err?.message||"");return;}document.getElementById("mensagemEdicao").textContent="Dados atualizados.";await carregarEstabelecimento();});
+    document.getElementById("formulariosEdicao").appendChild(formEdicao);
 
     const status = document.createElement("p");
     status.className = "status";
@@ -523,6 +547,7 @@ async function carregarEstabelecimento() {
   });
 }
 
+async function carregarMetricasProprietario(){const area=document.getElementById("metricasProprietario");area.innerHTML="";if(!estabelecimentosDoUsuario.length){area.textContent="Nenhum estabelecimento vinculado.";return;}for(const e of estabelecimentosDoUsuario){const d=document.createElement("div");d.className="resultado-oferta";const h=document.createElement("h4");h.textContent=e.nome||"Estabelecimento";const p=document.createElement("p");p.textContent="Consultando métricas...";d.append(h,p);area.appendChild(d);const {data,error}=await supabaseClient.rpc("resumo_metricas_estabelecimento_nightlife",{p_estabelecimento_id:e.id});if(error){p.textContent="Métricas indisponíveis. Execute a migration SQL no Supabase.";continue;}const m=Array.isArray(data)?data[0]:data;p.textContent=m?"Visualizações únicas: "+(m.visualizacoes_unicas||0)+" | WhatsApp: "+(m.cliques_whatsapp||0)+" | Como chegar: "+(m.cliques_rota||0)+" | Visitantes únicos: "+(m.visitantes_unicos||0):"Sem interações registradas.";}}
 async function carregarOfertasProprietario() {
   const seletor = document.getElementById("estabelecimentoOferta");
   const lista = document.getElementById("listaOfertas");

@@ -432,6 +432,7 @@ footer p {
 
     .lista { grid-template-columns: 1fr; }
 }
+.menu-flutuante{position:fixed;top:14px;right:16px;z-index:9999}.menu-abrir{width:48px;height:46px;border:1px solid #ff1738;border-radius:9px;background:#111;color:#fff;font-size:27px;cursor:pointer}.menu-links{display:none;position:absolute;right:0;top:54px;width:235px;padding:10px;background:#111;border:1px solid #ff1738;border-radius:12px;box-shadow:0 12px 35px #000}.menu-links.aberto{display:grid;gap:7px}.menu-links a{display:block;padding:12px;border:1px solid #383838;border-radius:8px;color:#eee;text-decoration:none;font-weight:bold;background:#191919}.menu-links a:hover{border-color:#ff1738;color:#ff526b}.menu-links .menu-admin[hidden]{display:none}
 </style>
 </head>
 
@@ -446,7 +447,7 @@ footer p {
     <p class="slogan">
         A noite começa <span>aqui</span>
     </p>
-</header>
+</header><nav class="menu-flutuante" aria-label="Menu principal"><button class="menu-abrir" id="menuAbrir" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button><div class="menu-links" id="menuLinks"><a href="index.html">Área do cliente</a><a href="login.html">Área do proprietário</a><a href="painel.html" id="linkAdminMenu" class="menu-admin" hidden>Administrador</a></div></nav>
 
 <main>
 
@@ -505,7 +506,12 @@ const SUPABASE_KEY =
 const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
-);
+);;
+const menuAbrir=document.getElementById("menuAbrir"),menuLinks=document.getElementById("menuLinks");
+menuAbrir?.addEventListener("click",()=>{const aberto=menuLinks.classList.toggle("aberto");menuAbrir.setAttribute("aria-expanded",String(aberto));});
+document.addEventListener("click",ev=>{if(!ev.target.closest(".menu-flutuante")){menuLinks?.classList.remove("aberto");menuAbrir?.setAttribute("aria-expanded","false");}});
+async function verificarLinkAdministrador(){const {data:s}=await supabaseClient.auth.getSession();if(!s.session)return;const {data:p}=await supabaseClient.from("perfis").select("tipo").eq("id",s.session.user.id).maybeSingle();if(p?.tipo==="admin")document.getElementById("linkAdminMenu").hidden=false;}
+
 
 let estabelecimentosVisiveis = [];
 let avaliacoesPorEstabelecimento = {};
@@ -579,6 +585,8 @@ function obterIdentificadorMetricas() {
     }
 }
 
+function registrarInteracao(estabelecimentoId,tipo){supabaseClient.rpc("registrar_interacao_nightlife",{p_estabelecimento_id:estabelecimentoId,p_tipo:tipo,p_visitante_id:obterIdentificadorMetricas()}).then(({error})=>{if(error)console.error(error.message);});}
+function observarVisualizacaoEstabelecimento(el,id){let done=false;const reg=()=>{if(done)return;done=true;registrarInteracao(id,"visualizacao");};if(!("IntersectionObserver" in window)){reg();return;}const obs=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){obs.disconnect();reg();}},{threshold:.35});obs.observe(el);}
 function criarEstrelas(nota) {
     return "★".repeat(nota) + "☆".repeat(5 - nota);
 }
@@ -599,7 +607,8 @@ async function carregarEstabelecimentos() {
 
     const { data, error } = await supabaseClient
         .from("estabelecimentos")
-        .select("id,nome,endereco,telefone,horario_funcionamento")
+        .select("id,nome,endereco,telefone,horario_funcionamento,ativo")
+        .eq("ativo", true)
         .in("status_plano", ["teste", "ativo", "tolerancia"])
         .order("criado_em", { ascending: false });
 
@@ -648,6 +657,11 @@ async function carregarEstabelecimentos() {
             (item.horario_funcionamento || "Não informado");
 
         card.append(titulo, endereco, telefone, horario);
+        const acoesLocal=document.createElement("div");acoesLocal.className="acoes";
+        const tel=(item.telefone||"").replace(/\\D/g,"");
+        if(tel){const w=document.createElement("a");w.className="botao";w.href="https://wa.me/"+tel;w.target="_blank";w.rel="noopener";w.textContent="Chamar no WhatsApp";w.addEventListener("click",()=>registrarInteracao(item.id,"whatsapp"));acoesLocal.appendChild(w);}
+        if(item.endereco){const r=document.createElement("a");r.className="botao secundario";r.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(item.endereco);r.target="_blank";r.rel="noopener";r.textContent="Como chegar";r.addEventListener("click",()=>registrarInteracao(item.id,"rota"));acoesLocal.appendChild(r);}
+        if(acoesLocal.childElementCount)card.appendChild(acoesLocal);observarVisualizacaoEstabelecimento(card,item.id);
 
         (ofertasPorEstabelecimento[item.id] || []).forEach(oferta => {
             const caixaOferta = document.createElement("div");
@@ -1040,16 +1054,11 @@ async function carregarEventos() {
         return;
     }
 
-    if (!data || data.length === 0) {
-        mensagem.textContent =
-            "Nenhum evento cadastrado ainda.";
-        return;
-    }
-
-    mensagem.textContent =
-        data.length + " evento(s) encontrado(s).";
-
-    data.forEach(item => {
+    const agora=new Date();
+    const eventosFuturos=(data||[]).filter(item=>{if(!item.data_evento)return false;const hora=item.horario||"23:59";const inicio=new Date(item.data_evento+"T"+hora+":00");return !Number.isNaN(inicio.getTime())&&inicio>=agora;});
+    if(eventosFuturos.length===0){mensagem.textContent="Não há eventos futuros. Eventos encerrados deixam de aparecer automaticamente.";return;}
+    mensagem.textContent=eventosFuturos.length+" evento(s) futuro(s) encontrado(s).";
+    eventosFuturos.forEach(item => {
 
         const card = document.createElement("article");
         card.className = "card";
@@ -1092,6 +1101,7 @@ async function carregarEventos() {
 }
 
 async function iniciarPagina() {
+    verificarLinkAdministrador();
     await carregarEstabelecimentos();
     await carregarEventos();
 }

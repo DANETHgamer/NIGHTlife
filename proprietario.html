@@ -59,9 +59,9 @@ function idAtual(){return el("estabelecimento").value}
 function dataHoje(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
 async function iniciar(){
  el("status").textContent="Verificando sua conta...";
- const {data,error}=await comPrazo(db.auth.getSession(),"verificar sua sessão");
- if(error||!data.session){location.replace("login.html");return}
- usuario=data.session.user;
+ const resultadoSessao=await comPrazo(db.auth.getSession(),"verificar sua sessão");
+ if(resultadoSessao.error||!resultadoSessao.data?.session){location.replace("login.html");return}
+ usuario=resultadoSessao.data.session.user;
  el("status").textContent="Conferindo suas permissões...";
  const acesso=await comPrazo(db.rpc("nightlife_obter_nivel_acesso"),"validar suas permissões");
  if(acesso.error){el("status").textContent="Não foi possível validar seu acesso: "+acesso.error.message;return}
@@ -72,9 +72,9 @@ async function iniciar(){
  el("conteudo").style.display="block";
  el("status").style.display="block";
  el("status").textContent="Carregando seus estabelecimentos...";
- const {data: dadosEstabelecimentos,error:erro} =await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
- if(erro){el("estabelecimento").replaceChildren(texto("option","Erro ao carregar: "+erro.message));return}
- estabelecimentos=dadosEstabelecimentos||[];
+ const resultadoEstabelecimentos=await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
+ if(resultadoEstabelecimentos.error){el("estabelecimento").replaceChildren(texto("option","Erro ao carregar: "+resultadoEstabelecimentos.error.message));el("status").textContent="Erro ao carregar estabelecimentos: "+resultadoEstabelecimentos.error.message;return}
+ estabelecimentos=resultadoEstabelecimentos.data||[];
  const select=el("estabelecimento");select.replaceChildren();
  if(!estabelecimentos.length){select.append(texto("option","Nenhum estabelecimento vinculado"));el("dadosEstabelecimento").textContent="Ainda não encontramos estabelecimentos vinculados a esta conta.";el("status").style.display="none";return}
  estabelecimentos.forEach(item=>{const op=texto("option",item.nome||"Estabelecimento");op.value=item.id;select.append(op)});

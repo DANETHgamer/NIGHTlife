@@ -26,3 +26,24 @@ BEGIN
 END; $$;
 REVOKE ALL ON FUNCTION public.nightlife_listar_painel_admins_regionais() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.nightlife_listar_painel_admins_regionais() TO authenticated;
+-- Limite de oito acessos regionais, mantendo os vínculos já existentes.
+CREATE OR REPLACE FUNCTION public.nightlife_criar_admin_regional_com_nome(
+  p_email text, p_estado text, p_cidades text[] DEFAULT '{}', p_nome_completo text DEFAULT NULL
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth AS $$
+DECLARE v_usuario_id uuid; v_total integer;
+BEGIN
+  IF NOT public.nightlife_eh_admin_supremo() THEN RAISE EXCEPTION 'Somente o Administrador Supremo pode cadastrar administradores regionais.'; END IF;
+  IF p_nome_completo IS NULL OR length(trim(p_nome_completo)) < 2 OR length(trim(p_nome_completo)) > 120 THEN RAISE EXCEPTION 'Informe o nome completo.'; END IF;
+  SELECT id INTO v_usuario_id FROM auth.users WHERE lower(email)=lower(trim(p_email)) LIMIT 1;
+  IF v_usuario_id IS NULL THEN RAISE EXCEPTION 'Conta de login não encontrada.'; END IF;
+  SELECT count(*) INTO v_total FROM public.nightlife_admins_regionais;
+  IF NOT EXISTS (SELECT 1 FROM public.nightlife_admins_regionais WHERE usuario_id=v_usuario_id) AND v_total >= 8 THEN
+    RAISE EXCEPTION 'O limite de oito administradores regionais já foi atingido.';
+  END IF;
+  PERFORM public.nightlife_criar_admin_regional(p_email,p_estado,coalesce(p_cidades,'{}'::text[]));
+  INSERT INTO public.nightlife_dados_admins_regionais(usuario_id,nome_completo,atualizado_em)
+  VALUES(v_usuario_id,trim(p_nome_completo),now())
+  ON CONFLICT(usuario_id) DO UPDATE SET nome_completo=EXCLUDED.nome_completo,atualizado_em=now();
+END; $$;
+REVOKE ALL ON FUNCTION public.nightlife_criar_admin_regional_com_nome(text,text,text[],text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.nightlife_criar_admin_regional_com_nome(text,text,text[],text) TO authenticated;

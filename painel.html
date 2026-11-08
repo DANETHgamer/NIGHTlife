@@ -92,9 +92,12 @@ main {
   padding: 25px 15px;
 }
 
-h1, h2, h3 {
-  color: #e5e5e5;
-}
+h1, h2, h3 { color: #e5e5e5; }
+p { color:#c9c9c9; line-height:1.55; }
+input, select { width:100%; padding:12px; margin:7px 0; background:#101010; color:#fff; border:1px solid #555; border-radius:8px; }
+input:focus, select:focus { outline:none; border-color:#ff1738; box-shadow:0 0 10px #ff173833; }
+.logo-sub { margin:7px 0 0; color:#aaa; font:14px Oswald,sans-serif; letter-spacing:3px; text-transform:uppercase; }
+.logo-sub span { color:#ff1738; }
 
 h2 {
   border-left: 4px solid #ff1738;
@@ -212,7 +215,7 @@ button:disabled {
 <body>
 
 <header>
-  <div class="logo">NIGHT<span>life</span></div>
+  <div><div class="logo">NIGHT<span>life</span></div><p class="logo-sub">A noite começa <span>aqui</span></p></div>
   <button id="sair">Sair da conta</button>
 </header><nav class="menu-flutuante" aria-label="Menu principal"><button class="menu-abrir" id="menuAbrir" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button><div class="menu-links" id="menuLinks"><a href="central-controle.html">Central de Controle</a><a href="central-cliente.html">Central do cliente</a><a href="index.html">Área do cliente</a><a href="login.html">Área do proprietário</a><a href="painel.html" id="linkAdminMenu" class="menu-admin" hidden>Administrador</a></div></nav>
 
@@ -246,7 +249,6 @@ button:disabled {
     </div>
 
     <div class="card">
-      <div class="card">
       <h3>Administradores regionais</h3>
       <p>Cadastre uma conta já existente e limite o acesso por estado. Se informar cidades, o administrador ficará restrito a elas; se deixar em branco, poderá administrar todo o estado.</p>
       <form id="formAdminRegional">
@@ -277,7 +279,7 @@ button:disabled {
 </main>
 
 <div class="rodape">
-  NIGHTlife © 2026 — Painel administrativo
+  NIGHTlife © 2026 — SUA CIDADE. SUA NOITE. SEU ROLÊ.
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

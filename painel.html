@@ -195,7 +195,7 @@ button:disabled {
   z-index: 1;
 }
 
-@media(max-width: 600px) {
+.resumo-admins{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}.resumo-admins>div{flex:1;min-width:180px;background:#090909;border:1px solid #444;border-left:3px solid #ff1738;border-radius:10px;padding:14px}.resumo-admins span{display:block;color:#ff1738;font:800 27px Orbitron,sans-serif}.resumo-admins small{display:block;color:#aaa;margin-top:6px}.grade-admins-regionais{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.admin-regional-card{background:#090909;border:1px solid #444;border-radius:10px;padding:15px;min-width:0}.admin-regional-card.vazio{border-style:dashed;opacity:.65}.admin-regional-topo{display:flex;justify-content:space-between;align-items:center;gap:8px}.admin-regional-numero{font:700 11px Oswald,sans-serif;color:#999;letter-spacing:1px}.admin-regional-uf{background:#ff1738;color:white;border-radius:6px;padding:5px 9px;font:800 14px Orbitron,sans-serif}.admin-regional-nome{font:600 18px Oswald,sans-serif;color:#eee;margin:12px 0 4px;overflow-wrap:anywhere}.admin-regional-clientes{font:800 29px Orbitron,sans-serif;color:#ff526b;margin-top:12px}.admin-regional-detalhe{font-size:12px;color:#aaa}.admin-regional-status{font-size:12px;color:#bbb;margin-top:8px}.admin-regional-acoes{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.admin-regional-acoes button{font-size:12px;padding:9px 10px}@media(max-width:600px){.grade-admins-regionais{grid-template-columns:1fr}.resumo-admins>div{min-width:130px}}\n\n@media(max-width: 600px) {
   .logo {
     font-size: 23px;
   }
@@ -252,6 +252,7 @@ button:disabled {
       <h3>Administradores regionais</h3>
       <p>Cadastre o administrador e escolha o estado. Ele terá acesso a <strong>todas as cidades cadastradas no NIGHTlife nesse estado</strong>, inclusive as que forem adicionadas futuramente.</p>
       <form id="formAdminRegional">
+        <input id="nomeAdminRegional" type="text" maxlength="120" placeholder="Nome completo do administrador" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
         <input id="emailAdminRegional" type="email" placeholder="E-mail da conta já cadastrada" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
         <select id="estadoAdminRegional" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
           <option value="">Selecione o estado</option>
@@ -261,7 +262,8 @@ button:disabled {
         <button type="submit">Salvar administrador regional</button>
       </form>
       <p id="mensagemAdminRegional"></p>
-      <div id="listaAdminsRegionais"></div>
+      <div class="resumo-admins"><div><span id="totalAdminsRegionais">0</span><small> de 8 administradores</small></div><div><span id="totalClientesRegionais">0</span><small> estabelecimentos/clientes nas regiões</small></div></div>
+      <div id="listaAdminsRegionais" class="grade-admins-regionais"></div>
     </div>
 
     <div class="card">
@@ -541,58 +543,121 @@ async function carregarAdminsRegionais() {
   const area = document.getElementById("listaAdminsRegionais");
   if (!area) return;
   area.replaceChildren();
-  const { data, error } = await supabaseClient.rpc("nightlife_listar_admins_regionais");
-  if (error) { area.textContent = "Não foi possível carregar administradores: " + error.message; return; }
-  if (!data || !data.length) { area.textContent = "Nenhum administrador regional cadastrado."; return; }
-  data.forEach(admin => {
-    const linha = document.createElement("div"); linha.className = "item";
-    const info = document.createElement("p");
-    info.textContent = admin.email + " | " + admin.estado + " | " + ((admin.cidades || []).length ? admin.cidades.join(", ") : "Todo o estado") + " | " + (admin.ativo ? "Ativo" : "Suspenso");
-    const acoes = document.createElement("div");
-    const editar = document.createElement("button");
-    editar.textContent = "Editar região";
-    editar.style.background = "#444";
-    editar.addEventListener("click", async () => {
-      const estado = prompt("Sigla do estado que esse administrador ficará responsável (ex.: RJ):", admin.estado);
-      if (estado === null) return;
-      editar.disabled = true;
-      const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", {
-        p_email: admin.email, p_estado: estado.trim().toUpperCase(),
-        p_cidades: []
+  const { data, error } = await supabaseClient.rpc("nightlife_listar_painel_admins_regionais");
+  if (error) {
+    area.textContent = "Não foi possível carregar o painel dos administradores: " + error.message + ". Execute a nova migration SQL no Supabase.";
+    return;
+  }
+
+  const admins = data || [];
+  const totalClientes = admins.reduce((soma, admin) => soma + Number(admin.total_estabelecimentos || 0), 0);
+  document.getElementById("totalAdminsRegionais").textContent = admins.length;
+  document.getElementById("totalClientesRegionais").textContent = totalClientes;
+
+  for (let i = 0; i < 8; i++) {
+    const admin = admins[i];
+    const card = document.createElement("section");
+    card.className = "admin-regional-card" + (admin ? "" : " vazio");
+
+    const topo = document.createElement("div");
+    topo.className = "admin-regional-topo";
+    const numero = document.createElement("span");
+    numero.className = "admin-regional-numero";
+    numero.textContent = "ADMINISTRADOR " + String(i + 1).padStart(2, "0");
+    topo.appendChild(numero);
+
+    if (admin) {
+      const uf = document.createElement("span");
+      uf.className = "admin-regional-uf";
+      uf.textContent = admin.estado || "--";
+      topo.appendChild(uf);
+    }
+
+    const nome = document.createElement("div");
+    nome.className = "admin-regional-nome";
+    nome.textContent = admin ? (admin.nome_completo || admin.email || "Sem nome") : "Vaga disponível";
+
+    const clientes = document.createElement("div");
+    clientes.className = "admin-regional-clientes";
+    clientes.textContent = admin ? Number(admin.total_estabelecimentos || 0).toLocaleString("pt-BR") : "—";
+
+    const detalhe = document.createElement("div");
+    detalhe.className = "admin-regional-detalhe";
+    detalhe.textContent = admin ? "estabelecimentos/clientes no estado" : "Cadastre um administrador para ocupar esta posição";
+
+    card.append(topo, nome, clientes, detalhe);
+
+    if (admin) {
+      const email = document.createElement("div");
+      email.className = "admin-regional-detalhe";
+      email.textContent = admin.email || "";
+      const status = document.createElement("div");
+      status.className = "admin-regional-status";
+      status.textContent = admin.ativo ? "● Acesso ativo" : "● Acesso suspenso";
+      status.style.color = admin.ativo ? "#65d68a" : "#ff526b";
+
+      const acoes = document.createElement("div");
+      acoes.className = "admin-regional-acoes";
+      const editar = document.createElement("button");
+      editar.textContent = "Editar estado";
+      editar.style.background = "#444";
+      editar.addEventListener("click", async () => {
+        const estado = prompt("Sigla do estado que esse administrador ficará responsável (ex.: RJ):", admin.estado);
+        if (estado === null) return;
+        editar.disabled = true;
+        const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", {
+          p_email: admin.email, p_estado: estado.trim().toUpperCase(), p_cidades: []
+        });
+        if (error) { alert(error.message); editar.disabled = false; return; }
+        await carregarAdminsRegionais();
       });
-      if (error) { alert(error.message); editar.disabled = false; return; }
-      await carregarAdminsRegionais();
-    });
-    const botao = document.createElement("button"); botao.textContent = admin.ativo ? "Suspender acesso" : "Reativar acesso"; botao.style.background = "#444";
-    botao.addEventListener("click", async () => {
-      if (!confirm((admin.ativo ? "Suspender" : "Reativar") + " o acesso de " + admin.email + "?")) return;
-      botao.disabled = true;
-      const resultado = await supabaseClient.rpc("nightlife_definir_status_admin_regional", { p_usuario_id: admin.usuario_id, p_ativo: !admin.ativo });
-      if (resultado.error) { alert(resultado.error.message); botao.disabled = false; return; }
-      await carregarAdminsRegionais();
-    });
-    const excluir = document.createElement("button");
-    excluir.textContent = "Excluir vínculo";
-    excluir.style.background = "#681020";
-    excluir.addEventListener("click", async () => {
-      if (!confirm("Remover " + admin.email + " da administração regional? A pessoa perderá imediatamente o acesso regional. A conta de login não será apagada do sistema de autenticação.")) return;
-      excluir.disabled = true;
-      const { error } = await supabaseClient.rpc("nightlife_remover_admin_regional", { p_usuario_id: admin.usuario_id });
-      if (error) { alert(error.message); excluir.disabled = false; return; }
-      await carregarAdminsRegionais();
-    });
-    acoes.append(editar, botao, excluir);
-    linha.append(info, acoes); area.appendChild(linha);
-  });
+
+      const botao = document.createElement("button");
+      botao.textContent = admin.ativo ? "Suspender" : "Reativar";
+      botao.style.background = "#444";
+      botao.addEventListener("click", async () => {
+        if (!confirm((admin.ativo ? "Suspender" : "Reativar") + " o acesso de " + (admin.nome_completo || admin.email) + "?")) return;
+        botao.disabled = true;
+        const resultado = await supabaseClient.rpc("nightlife_definir_status_admin_regional", { p_usuario_id: admin.usuario_id, p_ativo: !admin.ativo });
+        if (resultado.error) { alert(resultado.error.message); botao.disabled = false; return; }
+        await carregarAdminsRegionais();
+      });
+
+      const excluir = document.createElement("button");
+      excluir.textContent = "Excluir vínculo";
+      excluir.style.background = "#681020";
+      excluir.addEventListener("click", async () => {
+        if (!confirm("Remover " + (admin.nome_completo || admin.email) + " da administração regional?")) return;
+        excluir.disabled = true;
+        const { error } = await supabaseClient.rpc("nightlife_remover_admin_regional", { p_usuario_id: admin.usuario_id });
+        if (error) { alert(error.message); excluir.disabled = false; return; }
+        await carregarAdminsRegionais();
+      });
+
+      acoes.append(editar, botao, excluir);
+      card.append(email, status, acoes);
+    }
+
+    area.appendChild(card);
+  }
+
+  if (admins.length > 8) {
+    const aviso = document.createElement("p");
+    aviso.textContent = "Atenção: existem " + admins.length + " administradores cadastrados. O painel mostra somente os 8 primeiros.";
+    area.appendChild(aviso);
+  }
 }
 document.getElementById("formAdminRegional")?.addEventListener("submit", async event => {
   event.preventDefault();
   const mensagem = document.getElementById("mensagemAdminRegional");
   const botao = event.currentTarget.querySelector("button[type=submit]");
+  const nome = document.getElementById("nomeAdminRegional").value.trim();
   const email = document.getElementById("emailAdminRegional").value.trim();
   const estado = document.getElementById("estadoAdminRegional").value;
-  botao.disabled = true; mensagem.textContent = "Atribuindo todas as cidades do estado ao administrador...";
-  const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", { p_email: email, p_estado: estado, p_cidades: [] });
+  botao.disabled = true; mensagem.textContent = "Salvando nome e atribuindo todas as cidades do estado...";
+  const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional_com_nome", {
+    p_email: email, p_estado: estado, p_cidades: [], p_nome_completo: nome
+  });
   if (error) mensagem.textContent = "Não foi possível salvar: " + error.message;
   else { mensagem.textContent = "Administrador regional configurado com sucesso."; event.currentTarget.reset(); await carregarCidadesDoEstado(""); await carregarAdminsRegionais(); }
   botao.disabled = false;

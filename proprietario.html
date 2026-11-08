@@ -15,6 +15,8 @@
 <h1>Área do Proprietário</h1><p class="muted" id="ola">Bem-vindo ao seu espaço no NIGHTlife.</p>
 <section class="panel"><h2>Meus estabelecimentos</h2><p class="muted">Você só pode administrar estabelecimentos vinculados à sua conta.</p><select id="estabelecimento" class="seletor"><option value="">Carregando seus estabelecimentos...</option></select><div id="dadosEstabelecimento" class="muted"></div></section>
 
+<section class="panel" id="painelVisitas"><h2>👥 Clientes enviados pelo NIGHTlife</h2><p class="muted">O cliente gera um código na página do seu estabelecimento. Quando ele chegar, digite o código abaixo para confirmar a visita. Cada código só pode ser confirmado uma vez.</p><div class="aviso" style="margin:12px 0">Visitas confirmadas: <strong id="totalVisitas">Carregando...</strong></div><form id="formConfirmarVisita"><label class="muted" for="codigoVisita">Código apresentado pelo cliente</label><div class="form-grid"><input id="codigoVisita" type="text" maxlength="11" placeholder="Ex.: NL-A1B2C3D4" autocomplete="off" required><button id="confirmarVisita" type="submit">Confirmar visita</button></div></form><p id="msgVisita" class="msg" aria-live="polite"></p><h3>Últimas visitas confirmadas</h3><div id="historicoVisitas" class="muted">Carregando histórico...</div></section>
+
 <section class="panel"><h2>📸 Fotos do ambiente</h2><p class="muted">Mostre aos clientes como é seu espaço: salão, mesas, decoração, bebidas e estrutura. JPG, PNG ou WEBP, até 5 MB por foto.</p><form id="formFoto"><input id="arquivoFoto" type="file" accept="image/jpeg,image/png,image/webp" required><input id="legendaFoto" type="text" maxlength="120" placeholder="Legenda da foto (opcional)"><button id="enviarFoto" type="submit">Publicar foto</button></form><p id="msgFoto" class="msg"></p><div id="listaFotos" class="grade"></div></section>
 
 <section class="panel"><h2>🎉 Criar evento ou festa</h2><p class="muted">Cadastre festas, shows, noites temáticas e outros eventos. Eles poderão aparecer na página pública do NIGHTlife.</p><form id="formEvento"><input id="nomeEvento" maxlength="100" placeholder="Nome do evento ou festa" required><textarea id="descricaoEvento" maxlength="1000" placeholder="Descrição, atrações e informações"></textarea><div class="form-grid"><input id="dataEvento" type="date" required><input id="horaEvento" type="time" required></div><button id="salvarEvento" type="submit">Publicar evento</button></form><p id="msgEvento" class="msg"></p><div id="listaEventos"></div></section>
@@ -82,10 +84,36 @@ async function iniciar(){
  await carregarConteudos();await carregarPix();
  el("status").style.display="none";
 }
+async function carregarVisitas(id){
+ const total=el("totalVisitas"),historico=el("historicoVisitas");
+ total.textContent="Carregando...";historico.textContent="Carregando histórico...";
+ const resumo=await comPrazo(db.rpc("resumo_visitas_confirmadas_nightlife",{p_estabelecimento_id:id}),"consultar visitas confirmadas");
+ if(resumo.error){total.textContent="Indisponível";historico.textContent="Não foi possível consultar as visitas. Confira se a atualização de visitas NIGHTlife foi executada no Supabase. "+resumo.error.message;return}
+ total.textContent=Number(resumo.data?.[0]?.visitas_confirmadas||0).toLocaleString("pt-BR");
+ const consulta=await comPrazo(db.from("visitas_nightlife").select("codigo,status,criado_em,confirmado_em").eq("estabelecimento_id",id).eq("status","confirmado").order("confirmado_em",{ascending:false}).limit(20),"carregar histórico de visitas");
+ if(consulta.error){historico.textContent="Não foi possível carregar o histórico: "+consulta.error.message;return}
+ if(!consulta.data?.length){historico.textContent="Nenhuma visita confirmada ainda.";return}
+ historico.replaceChildren();
+ consulta.data.forEach(v=>{
+  const linha=document.createElement("div");linha.className="linha";
+  const codigo=texto("strong",v.codigo);
+  const data=texto("p","Confirmada em "+new Date(v.confirmado_em||v.criado_em).toLocaleString("pt-BR"));
+  linha.append(codigo,data);historico.append(linha);
+ });
+}
+el("formConfirmarVisita").addEventListener("submit",async e=>{
+ e.preventDefault();const codigo=el("codigoVisita").value.trim().toUpperCase();
+ if(!codigo)return;
+ el("confirmarVisita").disabled=true;mensagem("msgVisita","Verificando código...");
+ const {error}=await comPrazo(db.rpc("confirmar_visita_nightlife",{p_codigo:codigo}),"confirmar a visita");
+ if(error){mensagem("msgVisita","Não foi possível confirmar: "+error.message);el("confirmarVisita").disabled=false;return}
+ mensagem("msgVisita","Visita confirmada! Este cliente foi registrado como vindo pelo NIGHTlife.");
+ el("formConfirmarVisita").reset();await carregarVisitas(idAtual());el("confirmarVisita").disabled=false;
+});
 async function carregarConteudos(){
  const id=idAtual(),item=estabelecimentos.find(x=>x.id===id);if(!id||!item)return;
  el("dadosEstabelecimento").textContent=[item.tipo,item.endereco,item.telefone,"Plano: "+(item.status_plano||"não informado"),"Vencimento: "+(item.vencimento_em?new Date(item.vencimento_em).toLocaleDateString("pt-BR"):"não informado"),item.ativo===false?"Desativado":"Ativo"].filter(Boolean).join(" • ");
- await Promise.all([carregarFotos(id),carregarEventos(id),carregarPromocoes(id)]);
+ await Promise.all([carregarFotos(id),carregarEventos(id),carregarPromocoes(id),carregarVisitas(id)]);
 }
 async function carregarFotos(id){
  const area=el("listaFotos");area.replaceChildren();

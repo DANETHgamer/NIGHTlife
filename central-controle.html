@@ -45,7 +45,8 @@ async function iniciar(){
  const acesso=await db.rpc("nightlife_obter_nivel_acesso");
  if(acesso.error){el("verificando").textContent="A estrutura regional ainda precisa ser ativada no Supabase. "+acesso.error.message;return;}
  const nivel=acesso.data||{};
- if(!["supremo","regional"].includes(nivel.nivel)){location.href="painel-proprietario.html";return;}
+ if(nivel.nivel==="supremo"){location.replace("painel.html");return;}
+ if(nivel.nivel!=="regional"){location.replace("painel-proprietario.html");return;}
  el("usuario").textContent="Conectado como: "+(user.email||"conta autenticada");
  if(nivel.nivel==="supremo"){el("tituloAcesso").textContent="Visão nacional — Administrador Supremo";el("escopo").textContent="Visão geral de todos os estados e cidades."; }
  else {el("tituloAcesso").textContent="Administrador regional — "+nivel.estado;el("escopo").textContent="Estado autorizado: "+nivel.estado+(nivel.cidades&&nivel.cidades.length?" | Cidades: "+nivel.cidades.join(", "):" | Todas as cidades do estado");}
@@ -64,7 +65,9 @@ async function carregar(){
  el("mensagem").textContent=itens.length?itens.length+" estabelecimento(s) dentro da sua permissão.":"Nenhum estabelecimento encontrado nesta região.";
  itens.forEach(item=>{
   const linha=document.createElement("div");linha.className="linha";
-  const info=document.createElement("div");const nome=document.createElement("strong");nome.textContent=item.nome||"Sem nome";const detalhe=document.createElement("span");detalhe.className="muted";detalhe.textContent=[item.cidade,item.estado,item.endereco,item.telefone].filter(Boolean).join(" | ");const plano=document.createElement("div");plano.className="tag";plano.textContent="Plano: "+(item.status_plano||"não definido");info.append(nome,detalhe,document.createElement("br"),plano);
+  const info=document.createElement("div");const nome=document.createElement("strong");nome.textContent=item.nome||"Sem nome";const detalhe=document.createElement("span");detalhe.className="muted";detalhe.textContent=[item.cidade,item.estado,item.endereco,item.telefone].filter(Boolean).join(" | ");const plano=document.createElement("div");plano.className="tag";plano.textContent="Plano: "+(item.status_plano||"não definido");
+  const vencimento=document.createElement("div");vencimento.className="muted";vencimento.textContent=item.vencimento_em?"Vencimento: "+new Date(item.vencimento_em).toLocaleDateString("pt-BR"):"Vencimento não informado";
+  info.append(nome,detalhe,document.createElement("br"),plano,vencimento);
   const acoes=document.createElement("div");acoes.className="acoes";const status=document.createElement("span");status.className="muted";status.textContent=item.ativo===false?"Desativado":"Ativo";const btn=document.createElement("button");btn.className="sec";btn.textContent=item.ativo===false?"Reativar":"Desativar";btn.addEventListener("click",async()=>{if(!confirm((item.ativo===false?"Reativar ":"Desativar ")+item.nome+"?"))return;btn.disabled=true;const r=await db.rpc("nightlife_alterar_status_estabelecimento_regional",{p_estabelecimento_id:item.id,p_ativo:item.ativo===false});if(r.error){alert(r.error.message);btn.disabled=false;return;}await carregar();});acoes.append(status,btn);linha.append(info,acoes);lista.append(linha);
  });
 }

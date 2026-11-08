@@ -24,7 +24,18 @@
 <section class="panel"><h2>Mensalidade e pagamento</h2><p class="muted">Use a chave Pix oficial da plataforma para realizar o pagamento. A chave é definida pelo Administrador Supremo e atualizada automaticamente para todos os proprietários.</p><div id="pix" class="pix">Carregando chave Pix...</div><p class="muted" id="pixMsg"></p></section>
 </div></main>
 <div class="rodape">NIGHTlife — SUA CIDADE. SUA NOITE. SEU ROLÊ.</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+window.addEventListener("error",function(e){
+ const s=document.getElementById("status");
+ if(s){s.style.display="block";s.textContent="Erro no painel: "+(e.message||"falha ao executar JavaScript")+(e.filename?" ("+e.filename.split("/").pop()+":"+e.lineno+")":"");}
+});
+window.addEventListener("unhandledrejection",function(e){
+ const s=document.getElementById("status");
+ const r=e.reason;
+ if(s){s.style.display="block";s.textContent="Erro de conexão do painel: "+(r&&r.message?r.message:String(r||"erro desconhecido"));}
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.getElementById('status').textContent='Não foi possível carregar a biblioteca de conexão do NIGHTlife (CDN).';"></script>
 <script>
 "use strict";
 const el=id=>document.getElementById(id);

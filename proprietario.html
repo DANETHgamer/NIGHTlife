@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080808">
+<title>NIGHTlife | Área do Proprietário</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Oswald:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#301017,#080808 60%);color:#eee;font:15px Arial,sans-serif}.top{padding:20px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#100b0d;border-bottom:2px solid #ff1738}.logo{font:800 26px Orbitron,sans-serif}.logo span{font:normal 26px Pacifico,cursive;color:#ff1738}button,a.btn{border:1px solid #ff526b;border-radius:8px;padding:11px 15px;background:linear-gradient(135deg,#ff1738,#a80020);color:white;font-weight:bold;cursor:pointer;text-decoration:none}.secondary{background:#242424!important;border-color:#484848!important}main{max-width:1050px;margin:auto;padding:28px 16px 55px}h1,h2,h3{font-family:Oswald,sans-serif}h1{font-size:32px;margin:0 0 5px}.muted{color:#aaa;line-height:1.6}.panel{background:linear-gradient(145deg,#191919,#101010);border:1px solid #383838;border-radius:13px;padding:20px;margin:18px 0}.panel h2{margin:0 0 12px;border-left:4px solid #ff1738;padding-left:12px}.item{padding:14px 0;border-bottom:1px solid #333}.item:last-child{border:0}.item strong{font:600 20px Oswald}.pix{font-size:18px;font-weight:bold;color:#ff8b9c;overflow-wrap:anywhere;padding:12px;background:#090909;border:1px dashed #63303a;border-radius:8px}.msg{color:#ffb7c1;white-space:pre-wrap;line-height:1.5}.rodape{text-align:center;color:#777;padding:22px;font-size:11px;letter-spacing:2px}#conteudo{display:none}button:disabled{opacity:.5;cursor:wait}
+</style></head>
+<body>
+<header class="top"><div class="logo">NIGHT<span>life</span></div><div><a class="btn secondary" href="index.html">Página inicial</a> <button id="sair" type="button">Sair</button></div></header>
+<main>
+<div id="status" class="panel">Verificando sua conta...</div>
+<div id="conteudo">
+<h1>Área do Proprietário</h1><p class="muted" id="ola">Bem-vindo ao seu espaço no NIGHTlife.</p>
+<section class="panel"><h2>Meus estabelecimentos</h2><p class="muted">Aqui aparecem somente os estabelecimentos vinculados à sua conta.</p><div id="lista" class="muted">Carregando...</div></section>
+<section class="panel"><h2>Mensalidade e pagamento</h2><p class="muted">Use a chave Pix oficial da plataforma para realizar o pagamento. A chave é definida pelo Administrador Supremo e atualizada automaticamente para todos os proprietários.</p><div id="pix" class="pix">Carregando chave Pix...</div><p class="muted" id="pixMsg"></p></section>
+</div></main>
+<div class="rodape">NIGHTlife — SUA CIDADE. SUA NOITE. SEU ROLÊ.</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+const URL="https://crmfxxsrhdncvaaxezvz.supabase.co",KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const el=id=>document.getElementById(id);
+function texto(tag,valor){const n=document.createElement(tag);n.textContent=valor;return n}
+async function iniciar(){
+ const {data,error}=await db.auth.getSession();
+ if(error||!data.session){location.replace("login.html");return}
+ const user=data.session.user;
+ const acesso=await db.rpc("nightlife_obter_nivel_acesso");
+ if(acesso.error){el("status").textContent="Não foi possível validar seu acesso: "+acesso.error.message;return}
+ if(acesso.data?.nivel==="supremo"){location.replace("administracao.html");return}
+ if(acesso.data?.nivel==="regional"){location.replace("central-controle.html");return}
+ el("ola").textContent="Conectado como: "+(user.email||"sua conta");
+ el("status").style.display="none";el("conteudo").style.display="block";
+ const vinculo=await db.rpc("nightlife_vincular_estabelecimentos_proprietario");
+ if(vinculo.error)el("lista").textContent="Não foi possível vincular cadastros antigos automaticamente: "+vinculo.error.message;
+ await carregarEstabelecimentos();
+ await carregarPix();
+}
+async function carregarEstabelecimentos(){
+ const area=el("lista");area.textContent="Carregando seus estabelecimentos...";
+ const {data,error}=await db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",(await db.auth.getUser()).data.user.id).order("criado_em",{ascending:false});
+ if(error){area.textContent="Erro ao carregar: "+error.message;return}
+ area.replaceChildren();
+ if(!data?.length){area.textContent="Ainda não encontramos estabelecimentos vinculados a este e-mail. Se você já cadastrou um estabelecimento usando este mesmo e-mail, saia e entre novamente. Se continuar sem aparecer, peça ao Administrador Supremo para conferir o vínculo.";return}
+ data.forEach(item=>{const box=document.createElement("div");box.className="item";box.append(texto("strong",item.nome||"Estabelecimento"));const detalhes=[item.tipo,item.endereco,item.telefone].filter(Boolean).join(" • ");box.append(texto("p",detalhes));box.append(texto("p","Plano: "+(item.status_plano||"Aguardando definição")+" • Vencimento: "+(item.vencimento_em?new Date(item.vencimento_em).toLocaleDateString("pt-BR"):"Não informado")));box.append(texto("p",item.ativo===false?"Situação: desativado":"Situação: ativo"));area.append(box)})
+}
+async function carregarPix(){
+ const area=el("pix"),msg=el("pixMsg");
+ const {data,error}=await db.rpc("nightlife_obter_chave_pix_proprietario");
+ if(error){area.textContent="Chave Pix indisponível no momento.";msg.textContent="A configuração de acesso à chave Pix precisa ser ativada pelo Administrador Supremo no Supabase. "+error.message;return}
+ area.textContent=data||"A chave Pix ainda não foi cadastrada pelo Administrador Supremo.";
+}
+el("sair").addEventListener("click",async()=>{await db.auth.signOut();location.replace("login.html")});
+iniciar();
+</script></body></html>

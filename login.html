@@ -4,51 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NIGHTlife - Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Oswald:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #090711;
-  color: white;
-  font-family: Arial, sans-serif;
-  padding: 20px;
-}
-.container {
-  width: 100%;
-  max-width: 400px;
-  padding: 30px;
-  background: #171323;
-  border-radius: 16px;
-  box-shadow: 0 0 25px #9333ea33;
-}
-h1 { color: #a855f7; text-align: center; }
-h2 { text-align: center; }
-input, button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 15px;
-  border-radius: 10px;
-  font-size: 16px;
-}
-input {
-  border: 1px solid #49365f;
-  background: #241b32;
-  color: white;
-}
-button {
-  border: none;
-  background: #9333ea;
-  color: white;
-  cursor: pointer;
-}
-#mensagem {
-  text-align: center;
-  overflow-wrap: anywhere;
-}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 50% 0%,#351018,#080808 62%);color:#eee;font-family:Arial,sans-serif}
+.container{width:100%;max-width:430px;padding:30px;background:linear-gradient(145deg,#1c1c1c,#101010);border:1px solid #444;border-top:3px solid #ff1738;border-radius:15px;box-shadow:0 15px 45px #000}
+.logo{text-align:center;font:900 clamp(30px,8vw,42px) Orbitron,sans-serif;letter-spacing:-2px;color:#e5e5e5;text-shadow:0 0 12px #ffffff22}
+.logo span{font:normal 1em Pacifico,cursive;color:#ff1738}
+.slogan{text-align:center;margin:12px 0 28px;font:16px Oswald,sans-serif;letter-spacing:4px;text-transform:uppercase;color:#ddd}
+.slogan span{color:#ff1738}
+h2{text-align:center;font:600 24px Oswald,sans-serif;color:#e5e5e5;text-transform:uppercase}
+input,button{width:100%;padding:14px;margin-top:15px;border-radius:8px;font-size:16px}
+input{border:1px solid #555;background:#090909;color:#fff}
+input:focus{outline:none;border-color:#ff1738;box-shadow:0 0 10px #ff173833}
+button{border:1px solid #ff526b;background:linear-gradient(135deg,#ff1738,#a80020);color:#fff;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+#mensagem{text-align:center;overflow-wrap:anywhere;color:#ffb7c1;line-height:1.5}
+.voltar{display:block;text-align:center;margin-top:18px;color:#bbb;text-decoration:none}
+.voltar:hover{color:#ff526b}
+.rodape{text-align:center;color:#777;font-size:11px;letter-spacing:2px;margin-top:25px}
 </style>
 </head>
 <body>

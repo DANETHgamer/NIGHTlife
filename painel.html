@@ -250,14 +250,14 @@ button:disabled {
 
     <div class="card">
       <h3>Administradores regionais</h3>
-      <p>Cadastre uma conta já existente e limite o acesso por estado. Se informar cidades, o administrador ficará restrito a elas; se deixar em branco, poderá administrar todo o estado.</p>
+      <p>Cadastre o administrador e escolha o estado. Ele terá acesso a <strong>todas as cidades cadastradas no NIGHTlife nesse estado</strong>, inclusive as que forem adicionadas futuramente.</p>
       <form id="formAdminRegional">
         <input id="emailAdminRegional" type="email" placeholder="E-mail da conta já cadastrada" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
         <select id="estadoAdminRegional" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
           <option value="">Selecione o estado</option>
           <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option><option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option><option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
         </select>
-        <label for="cidadesAdminRegional">Cidades que esse administrador poderá gerenciar (selecione uma ou mais)</label><select id="cidadesAdminRegional" multiple size="7" disabled style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px"><option value="">Selecione primeiro um estado</option></select><small id="ajudaCidadesRegional" style="display:block;color:#aaa">Escolha um estado para carregar a lista oficial de municípios.</small>
+        <label for="cidadesAdminRegional">Cidades cadastradas no NIGHTlife que ficarão sob responsabilidade dele</label><select id="cidadesAdminRegional" size="8" disabled style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px"><option value="">Selecione primeiro um estado</option></select><small id="ajudaCidadesRegional" style="display:block;color:#aaa">Todas as cidades desta lista e as que forem cadastradas futuramente no estado serão incluídas automaticamente.</small>
         <button type="submit">Salvar administrador regional</button>
       </form>
       <p id="mensagemAdminRegional"></p>
@@ -501,30 +501,39 @@ const estadoRegional = document.getElementById("estadoAdminRegional");
 const cidadesRegional = document.getElementById("cidadesAdminRegional");
 const ajudaCidadesRegional = document.getElementById("ajudaCidadesRegional");
 
-async function carregarCidadesDoEstado(uf, selecionadas = []) {
+async function carregarCidadesDoEstado(uf) {
   cidadesRegional.replaceChildren();
   cidadesRegional.disabled = true;
   if (!uf) {
     cidadesRegional.add(new Option("Selecione primeiro um estado", ""));
-    ajudaCidadesRegional.textContent = "Escolha um estado para carregar a lista oficial de municípios.";
+    ajudaCidadesRegional.textContent = "Escolha um estado para ver as cidades cadastradas no NIGHTlife.";
     return;
   }
-  ajudaCidadesRegional.textContent = "Carregando municípios...";
-  try {
-    const resposta = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados/" + encodeURIComponent(uf) + "/municipios?orderBy=nome");
-    if (!resposta.ok) throw new Error("Não foi possível consultar a lista do IBGE.");
-    const municipios = await resposta.json();
-    municipios.forEach(municipio => {
-      const opcao = new Option(municipio.nome, municipio.nome);
-      opcao.selected = selecionadas.includes(municipio.nome);
-      cidadesRegional.add(opcao);
-    });
-    cidadesRegional.disabled = false;
-    ajudaCidadesRegional.textContent = municipios.length + " municípios carregados. Use Ctrl (ou Command no Mac) para selecionar várias cidades. Se não selecionar nenhuma, o administrador terá acesso a todo o estado.";
-  } catch (erro) {
-    cidadesRegional.add(new Option("Erro ao carregar. Tente novamente.", ""));
-    ajudaCidadesRegional.textContent = erro.message;
+
+  ajudaCidadesRegional.textContent = "Buscando cidades cadastradas no NIGHTlife...";
+  const { data, error } = await supabaseClient
+    .from("nightlife_cidades")
+    .select("cidade")
+    .eq("estado", uf)
+    .eq("ativa", true)
+    .order("cidade");
+
+  if (error) {
+    cidadesRegional.add(new Option("Não foi possível carregar as cidades", ""));
+    ajudaCidadesRegional.textContent = "Erro ao consultar o catálogo de cidades: " + error.message;
+    return;
   }
+
+  const cidades = [...new Set((data || []).map(item => item.cidade).filter(Boolean))];
+  if (!cidades.length) {
+    cidadesRegional.add(new Option("Nenhuma cidade cadastrada neste estado ainda", ""));
+    ajudaCidadesRegional.textContent = "O administrador continuará autorizado para todo o estado; as cidades serão incluídas automaticamente quando forem cadastradas.";
+    return;
+  }
+
+  cidades.forEach(cidade => cidadesRegional.add(new Option(cidade, cidade)));
+  cidadesRegional.disabled = true;
+  ajudaCidadesRegional.textContent = cidades.length + " cidade(s) já cadastrada(s). Todas ficarão sob responsabilidade do administrador, incluindo futuras cidades adicionadas ao NIGHTlife.";
 }
 estadoRegional?.addEventListener("change", () => carregarCidadesDoEstado(estadoRegional.value));
 
@@ -544,14 +553,12 @@ async function carregarAdminsRegionais() {
     editar.textContent = "Editar região";
     editar.style.background = "#444";
     editar.addEventListener("click", async () => {
-      const estado = prompt("Sigla do novo estado (ex.: SC):", admin.estado);
+      const estado = prompt("Sigla do estado que esse administrador ficará responsável (ex.: RJ):", admin.estado);
       if (estado === null) return;
-      const cidadesTexto = prompt("Cidades separadas por vírgula. Deixe vazio para todo o estado:", (admin.cidades || []).join(", "));
-      if (cidadesTexto === null) return;
       editar.disabled = true;
       const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", {
         p_email: admin.email, p_estado: estado.trim().toUpperCase(),
-        p_cidades: cidadesTexto.split(",").map(c => c.trim()).filter(Boolean)
+        p_cidades: []
       });
       if (error) { alert(error.message); editar.disabled = false; return; }
       await carregarAdminsRegionais();
@@ -584,9 +591,8 @@ document.getElementById("formAdminRegional")?.addEventListener("submit", async e
   const botao = event.currentTarget.querySelector("button[type=submit]");
   const email = document.getElementById("emailAdminRegional").value.trim();
   const estado = document.getElementById("estadoAdminRegional").value;
-  const cidades = Array.from(document.getElementById("cidadesAdminRegional").selectedOptions).map(opcao => opcao.value).filter(Boolean);
-  botao.disabled = true; mensagem.textContent = "Salvando permissões regionais...";
-  const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", { p_email: email, p_estado: estado, p_cidades: cidades });
+  botao.disabled = true; mensagem.textContent = "Atribuindo todas as cidades do estado ao administrador...";
+  const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", { p_email: email, p_estado: estado, p_cidades: [] });
   if (error) mensagem.textContent = "Não foi possível salvar: " + error.message;
   else { mensagem.textContent = "Administrador regional configurado com sucesso."; event.currentTarget.reset(); await carregarCidadesDoEstado(""); await carregarAdminsRegionais(); }
   botao.disabled = false;

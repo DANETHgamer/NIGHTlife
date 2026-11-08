@@ -352,7 +352,9 @@ button:disabled {
     <button id="atualizarOfertas" type="button">Atualizar resultados</button>
   </div>
 
-  <div class="card"><h3>Resultados que o NIGHTlife está trazendo</h3><p>Visualizações e cliques indicam interesse. Códigos confirmados pelo estabelecimento indicam visitas presenciais.</p><div id="metricasProprietario">Carregando...</div></div>
+  <div class="card"><h3>Resultados que o NIGHTlife está trazendo</h3><p>Visualizações e cliques indicam interesse. Visitas confirmadas são clientes que apresentaram o código gerado no NIGHTlife.</p><div id="metricasProprietario">Carregando...</div>
+    <div class="resultado-oferta"><h3>Confirmar visita de cliente</h3><p>Peça ao cliente o código gerado no site, digite abaixo e confirme a presença dele no seu estabelecimento.</p><input id="codigoVisitaProprietario" type="text" maxlength="12" placeholder="Ex.: NL-A1B2C3D4" style="width:100%;padding:12px;border-radius:8px;border:1px solid #444;background:#101010;color:white;font:inherit;text-transform:uppercase"><button id="confirmarVisitaProprietario" type="button">Confirmar visita</button><p id="mensagemVisitaProprietario" role="status" aria-live="polite"></p></div>
+  </div>
   <div class="card">
     <h3>Pagamento da mensalidade</h3>
     <p>Use a chave Pix abaixo para pagar a mensalidade do NIGHTlife.</p>
@@ -547,7 +549,24 @@ async function carregarEstabelecimento() {
   });
 }
 
-async function carregarMetricasProprietario(){const area=document.getElementById("metricasProprietario");area.innerHTML="";if(!estabelecimentosDoUsuario.length){area.textContent="Nenhum estabelecimento vinculado.";return;}for(const e of estabelecimentosDoUsuario){const d=document.createElement("div");d.className="resultado-oferta";const h=document.createElement("h4");h.textContent=e.nome||"Estabelecimento";const p=document.createElement("p");p.textContent="Consultando métricas...";d.append(h,p);area.appendChild(d);const {data,error}=await supabaseClient.rpc("resumo_metricas_estabelecimento_nightlife",{p_estabelecimento_id:e.id});if(error){p.textContent="Métricas indisponíveis. Execute a migration SQL no Supabase.";continue;}const m=Array.isArray(data)?data[0]:data;p.textContent=m?"Visualizações únicas: "+(m.visualizacoes_unicas||0)+" | WhatsApp: "+(m.cliques_whatsapp||0)+" | Como chegar: "+(m.cliques_rota||0)+" | Visitantes únicos: "+(m.visitantes_unicos||0):"Sem interações registradas.";}}
+async function confirmarVisitaNightlife(){
+  const input=document.getElementById("codigoVisitaProprietario"),botao=document.getElementById("confirmarVisitaProprietario"),msg=document.getElementById("mensagemVisitaProprietario");
+  const codigo=input.value.trim().toUpperCase();
+  if(!codigo){msg.textContent="Digite o código que o cliente apresentou.";return;}
+  botao.disabled=true;msg.textContent="Conferindo código...";
+  const {data,error}=await supabaseClient.rpc("confirmar_visita_nightlife",{p_codigo:codigo});
+  botao.disabled=false;
+  if(error){msg.textContent="Não foi possível confirmar: "+error.message;return;}
+  msg.textContent="Visita confirmada! Obrigado por registrar um cliente vindo pelo NIGHTlife.";
+  input.value="";
+  await carregarMetricasProprietario();
+}
+document.getElementById("confirmarVisitaProprietario").addEventListener("click",confirmarVisitaNightlife);
+async function carregarMetricasProprietario(){const area=document.getElementById("metricasProprietario");area.innerHTML="";if(!estabelecimentosDoUsuario.length){area.textContent="Nenhum estabelecimento vinculado.";return;}for(const e of estabelecimentosDoUsuario){const d=document.createElement("div");d.className="resultado-oferta";const h=document.createElement("h4");h.textContent=e.nome||"Estabelecimento";const p=document.createElement("p");p.textContent="Consultando métricas...";d.append(h,p);area.appendChild(d);const {data,error}=await supabaseClient.rpc("resumo_metricas_estabelecimento_nightlife",{p_estabelecimento_id:e.id});if(error){p.textContent="Métricas indisponíveis. Execute a migration SQL no Supabase.";continue;}const m=Array.isArray(data)?data[0]:data;
+    const {data:visitas,error:erroVisitas}=await supabaseClient.rpc("resumo_visitas_confirmadas_nightlife",{p_estabelecimento_id:e.id});
+    const v=Array.isArray(visitas)?visitas[0]:visitas;
+    p.textContent=(m?"Visualizações únicas: "+(m.visualizacoes_unicas||0)+" | Cliques WhatsApp: "+(m.cliques_whatsapp||0)+" | Cliques em Como chegar: "+(m.cliques_rota||0)+" | Visitantes únicos: "+(m.visitantes_unicos||0):"Sem interações registradas.")+" | Visitas presenciais confirmadas: "+(!erroVisitas?(v?.visitas_confirmadas||0):"indisponível");
+  }}
 async function carregarOfertasProprietario() {
   const seletor = document.getElementById("estabelecimentoOferta");
   const lista = document.getElementById("listaOfertas");

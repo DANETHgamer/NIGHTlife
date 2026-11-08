@@ -232,9 +232,11 @@ placeholder="E-mail" required>
 <input id="telefone" type="tel"
 placeholder="Telefone">
 
-<select id="estado" required><option value="">Selecione o estado</option></select>
+<input id="estado" type="text" list="listaEstados" placeholder="Pesquise o estado (ex.: SC ou Santa Catarina)" autocomplete="off" required>
+<datalist id="listaEstados"></datalist>
 
-<select id="cidade" required><option value="">Selecione a cidade</option></select>
+<input id="cidade" type="text" list="listaCidades" placeholder="Primeiro selecione o estado" autocomplete="off" required>
+<datalist id="listaCidades"></datalist>
 
 <input id="endereco" type="text"
 placeholder="Endereço" required>
@@ -281,39 +283,76 @@ const supabaseClient = window.supabase.createClient(
 );
 
 
+const estadosBrasileiros = [
+    ["AC","Acre"],["AL","Alagoas"],["AP","Amapá"],["AM","Amazonas"],
+    ["BA","Bahia"],["CE","Ceará"],["DF","Distrito Federal"],["ES","Espírito Santo"],
+    ["GO","Goiás"],["MA","Maranhão"],["MT","Mato Grosso"],["MS","Mato Grosso do Sul"],
+    ["MG","Minas Gerais"],["PA","Pará"],["PB","Paraíba"],["PR","Paraná"],
+    ["PE","Pernambuco"],["PI","Piauí"],["RJ","Rio de Janeiro"],["RN","Rio Grande do Norte"],
+    ["RS","Rio Grande do Sul"],["RO","Rondônia"],["RR","Roraima"],["SC","Santa Catarina"],
+    ["SP","São Paulo"],["SE","Sergipe"],["TO","Tocantins"]
+];
+
+let cidadesCatalogo = [];
+let estadoSelecionado = "";
+
+function normalizarTexto(valor) {
+    return valor.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+
 async function carregarCidadesCadastro() {
-    const estado = document.getElementById("estado");
-    const cidade = document.getElementById("cidade");
+    const campoEstado = document.getElementById("estado");
+    const campoCidade = document.getElementById("cidade");
+    const listaEstados = document.getElementById("listaEstados");
+    const listaCidades = document.getElementById("listaCidades");
+
+    estadosBrasileiros.forEach(([uf, nome]) => {
+        const option = document.createElement("option");
+        option.value = uf + " - " + nome;
+        listaEstados.appendChild(option);
+    });
+
     const { data, error } = await supabaseClient
         .from("nightlife_cidades")
         .select("estado,cidade,prioridade")
         .eq("ativa", true)
         .order("estado")
         .order("prioridade");
+
     if (error) {
-        mensagem.textContent = "Não foi possível carregar as cidades disponíveis. A administração precisa ativar o catálogo no banco de dados.";
+        mensagem.textContent = "Não foi possível carregar as cidades. Tente novamente mais tarde.";
         console.error(error);
         return;
     }
-    const cidades = data || [];
-    [...new Set(cidades.map(item => item.estado))].forEach(uf => {
-        const option = document.createElement("option");
-        option.value = uf;
-        option.textContent = uf;
-        estado.appendChild(option);
-    });
-    estado.addEventListener("change", () => {
-        cidade.replaceChildren();
-        const inicial = document.createElement("option");
-        inicial.value = "";
-        inicial.textContent = "Selecione a cidade";
-        cidade.appendChild(inicial);
-        cidades.filter(item => item.estado === estado.value).forEach(item => {
+
+    cidadesCatalogo = data || [];
+
+    campoEstado.addEventListener("input", () => {
+        const busca = normalizarTexto(campoEstado.value);
+        const estado = estadosBrasileiros.find(([uf, nome]) =>
+            busca === normalizarTexto(uf) ||
+            busca === normalizarTexto(nome) ||
+            busca === normalizarTexto(uf + " - " + nome)
+        );
+
+        estadoSelecionado = estado ? estado[0] : "";
+        campoCidade.value = "";
+        listaCidades.replaceChildren();
+
+        if (!estadoSelecionado) {
+            campoCidade.placeholder = "Digite e selecione um estado válido primeiro";
+            return;
+        }
+
+        const cidadesDoEstado = cidadesCatalogo.filter(item => item.estado === estadoSelecionado);
+        cidadesDoEstado.forEach(item => {
             const option = document.createElement("option");
             option.value = item.cidade;
-            option.textContent = item.cidade;
-            cidade.appendChild(option);
+            listaCidades.appendChild(option);
         });
+        campoCidade.placeholder = cidadesDoEstado.length
+            ? "Pesquise ou selecione a cidade"
+            : "Ainda não há cidades cadastradas para este estado";
     });
 }
 carregarCidadesCadastro();
@@ -324,13 +363,19 @@ const botao = document.getElementById("botaoCadastrar");
 formulario.addEventListener("submit", async function(event) {
     event.preventDefault();
 
+    const cidadeValida = cidadesCatalogo.some(item => item.estado === estadoSelecionado && item.cidade === document.getElementById("cidade").value.trim());
+    if (!estadoSelecionado || !cidadeValida) {
+        mensagem.textContent = "Pesquise e selecione um estado e uma cidade disponíveis no NIGHTlife.";
+        return;
+    }
+
     botao.disabled = true;
     mensagem.textContent = "Enviando cadastro...";
 
     const dados = {
         nome: document.getElementById("nome").value.trim(),
-        cidade: document.getElementById("cidade").value,
-        estado: document.getElementById("estado").value,
+        cidade: document.getElementById("cidade").value.trim(),
+        estado: estadoSelecionado,
         endereco:
             document.getElementById("endereco").value.trim() +
             ", " +

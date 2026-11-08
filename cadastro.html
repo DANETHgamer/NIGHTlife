@@ -266,7 +266,21 @@ Cadastrar
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL =
+"https://crmfxxsrhdncvaaxezvz.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
 async function carregarCidadesCadastro() {
     const estado = document.getElementById("estado");
     const cidade = document.getElementById("cidade");
@@ -277,7 +291,7 @@ async function carregarCidadesCadastro() {
         .order("estado")
         .order("prioridade");
     if (error) {
-        mensagem.textContent = "Não foi possível carregar as cidades disponíveis. Tente novamente mais tarde.";
+        mensagem.textContent = "Não foi possível carregar as cidades disponíveis. A administração precisa ativar o catálogo no banco de dados.";
         console.error(error);
         return;
     }
@@ -303,21 +317,7 @@ async function carregarCidadesCadastro() {
     });
 }
 carregarCidadesCadastro();
-</script>
-
-<script>
-const SUPABASE_URL =
-"https://crmfxxsrhdncvaaxezvz.supabase.co";
-
-const SUPABASE_KEY =
-"sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-const formulario = document.getElementById("formCadastro");
+\nconst formulario = document.getElementById("formCadastro");
 const mensagem = document.getElementById("mensagem");
 const botao = document.getElementById("botaoCadastrar");
 

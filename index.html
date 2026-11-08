@@ -434,6 +434,16 @@ footer p {
 }
 .menu-flutuante{position:fixed;top:14px;right:16px;z-index:9999}.menu-abrir{width:48px;height:46px;border:1px solid #ff1738;border-radius:9px;background:#111;color:#fff;font-size:27px;cursor:pointer}.menu-links{display:none;position:absolute;right:0;top:54px;width:235px;padding:10px;background:#111;border:1px solid #ff1738;border-radius:12px;box-shadow:0 12px 35px #000}.menu-links.aberto{display:grid;gap:7px}.menu-links a{display:block;padding:12px;border:1px solid #383838;border-radius:8px;color:#eee;text-decoration:none;font-weight:bold;background:#191919}.menu-links a:hover{border-color:#ff1738;color:#ff526b}.menu-links .menu-admin[hidden]{display:none}
 .busca-cidades{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:0 0 18px;padding:16px;background:#151515;border:1px solid #383838;border-radius:12px}.busca-cidades label{display:block;color:#bbb;font-size:13px;margin-bottom:5px}.busca-cidades input,.busca-cidades select{width:100%;padding:12px;border:1px solid #444;border-radius:7px;background:#090909;color:#fff}.busca-cidades button{align-self:end;padding:12px;border:1px solid #ff1738;border-radius:7px;background:linear-gradient(135deg,#ff1738,#a90020);color:#fff;font-weight:bold;cursor:pointer}.cidade-destaque{color:#ff7184;font-size:13px;margin:0 0 12px}@media(max-width:500px){.busca-cidades{grid-template-columns:1fr}}
+
+.acessos-plataforma{margin:42px 0 8px;padding:22px;background:linear-gradient(145deg,#171717,#0d0d0d);border:1px solid #3b3b3b;border-radius:14px}
+.acessos-plataforma>p{color:#aaa;line-height:1.6}
+.acessos-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+.acesso-card{display:flex;flex-direction:column;gap:10px;padding:18px;background:#101010;border:1px solid #414141;border-radius:11px}
+.acesso-card h3{margin:0;color:#eee;font:600 21px Oswald,sans-serif}
+.acesso-card p{margin:0 0 4px;color:#aaa;font-size:13px;line-height:1.55}
+.acesso-card a{margin-top:auto;display:block;padding:11px;border-radius:7px;background:#1b1b1b;border:1px solid #ff1738;color:#fff;text-align:center;text-decoration:none;font-weight:bold}
+.acesso-card a:hover{background:#310d15}
+.acesso-card.destaque{border-top:3px solid #ff1738}
 </style>
 </head>
 
@@ -495,6 +505,31 @@ footer p {
         <div id="listaEventos" class="lista"></div>
     </section>
 
+
+    <section class="acessos-plataforma" aria-labelledby="tituloAcessos">
+        <div class="secao-titulo">
+            <span class="icone">🔐</span>
+            <h2 id="tituloAcessos">Acessos do NIGHTlife</h2>
+        </div>
+        <p>Entre na área correspondente ao seu perfil. O sistema identifica sua permissão e abre somente o painel autorizado para sua conta.</p>
+        <div class="acessos-grade">
+            <article class="acesso-card">
+                <h3>Área do cliente</h3>
+                <p>Explore estabelecimentos, descubra eventos, confira ofertas e avaliações.</p>
+                <a href="index.html">Explorar NIGHTlife</a>
+            </article>
+            <article class="acesso-card destaque">
+                <h3>Área do proprietário</h3>
+                <p>Gerencie somente seus estabelecimentos, planos, ofertas, eventos e resultados.</p>
+                <a href="login.html">Entrar como proprietário</a>
+            </article>
+            <article class="acesso-card destaque">
+                <h3>Administração</h3>
+                <p>Administradores regionais e Administrador Supremo entram pela mesma tela. O sistema direciona cada conta ao painel exclusivo de sua permissão.</p>
+                <a href="login.html">Acesso administrativo seguro</a>
+            </article>
+        </div>
+    </section>
 </main>
 
 <footer>

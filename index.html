@@ -473,7 +473,7 @@ footer p {
             <div><label for="pesquisaEstabelecimento">Nome do estabelecimento</label><input id="pesquisaEstabelecimento" type="search" placeholder="Ex.: bar, balada, restaurante"></div>
             <button id="buscarEstabelecimentos" type="button">Pesquisar</button>
         </div>
-        <p class="cidade-destaque">Encontre lugares por estado e cidade. Começamos pelas 10 cidades prioritárias de Santa Catarina.</p>
+        <p class="cidade-destaque">Encontre estabelecimentos por estado e cidade em todo o Brasil.</p>
         <p id="mensagemEstabelecimentos" class="mensagem">
             Carregando estabelecimentos...
         </p>
@@ -1147,9 +1147,20 @@ async function carregarEventos() {
 
 async function iniciarPagina() {
     verificarLinkAdministrador();
+    await carregarCatalogoCidades();
     await carregarEstabelecimentos();
     await carregarEventos();
 }
+
+const nomesEstados = {
+ AC:"Acre", AL:"Alagoas", AP:"Amapá", AM:"Amazonas", BA:"Bahia",
+ CE:"Ceará", DF:"Distrito Federal", ES:"Espírito Santo", GO:"Goiás",
+ MA:"Maranhão", MT:"Mato Grosso", MS:"Mato Grosso do Sul", MG:"Minas Gerais",
+ PA:"Pará", PB:"Paraíba", PR:"Paraná", PE:"Pernambuco", PI:"Piauí",
+ RJ:"Rio de Janeiro", RN:"Rio Grande do Norte", RS:"Rio Grande do Sul",
+ RO:"Rondônia", RR:"Roraima", SC:"Santa Catarina", SP:"São Paulo",
+ SE:"Sergipe", TO:"Tocantins"
+};
 
 async function carregarCatalogoCidades() {
     const estadoSelect = document.getElementById("filtroEstado");
@@ -1168,7 +1179,7 @@ async function carregarCatalogoCidades() {
     [...new Set(cidades.map(item => item.estado))].forEach(estado => {
         const option = document.createElement("option");
         option.value = estado;
-        option.textContent = estado;
+        option.textContent = estado + " — " + (nomesEstados[estado] || estado);
         estadoSelect.appendChild(option);
     });
     function atualizarCidades() {

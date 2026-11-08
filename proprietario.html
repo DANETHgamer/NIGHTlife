@@ -24,21 +24,14 @@
 <section class="panel"><h2>Mensalidade e pagamento</h2><p class="muted">Use a chave Pix oficial da plataforma para realizar o pagamento. A chave é definida pelo Administrador Supremo e atualizada automaticamente para todos os proprietários.</p><div id="pix" class="pix">Carregando chave Pix...</div><p class="muted" id="pixMsg"></p></section>
 </div></main>
 <div class="rodape">NIGHTlife — SUA CIDADE. SUA NOITE. SEU ROLÊ.</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 "use strict";
 const el=id=>document.getElementById(id);
-function carregarBibliotecaSupabase(){
- return new Promise((resolve,reject)=>{
-  if(window.supabase?.createClient){resolve();return;}
-  const script=document.createElement("script");
-  script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-  script.onload=()=>window.supabase?.createClient?resolve():reject(new Error("A biblioteca do Supabase carregou, mas não ficou disponível."));
-  script.onerror=()=>reject(new Error("Não foi possível baixar a biblioteca do Supabase. Verifique sua internet ou bloqueios do navegador."));
-  document.head.appendChild(script);
-  setTimeout(()=>reject(new Error("A conexão com a biblioteca do Supabase demorou demais. Tente novamente.")),12000);
- });
+if (!window.supabase?.createClient) {
+ el("status").textContent="Não foi possível carregar a conexão do NIGHTlife. Atualize a página ou tente outro navegador.";
+ throw new Error("Biblioteca do Supabase indisponível.");
 }
-carregarBibliotecaSupabase().then(()=>{
 const URL="https://crmfxxsrhdncvaaxezvz.supabase.co",KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q",BUCKET="nightlife-estabelecimentos";
 if (!window.supabase || typeof window.supabase.createClient !== "function") {
  el("status").textContent = "A conexão do NIGHTlife não carregou. Verifique sua internet e atualize a página."; 
@@ -58,6 +51,7 @@ async function iniciar(){
  const {data,error}=await comPrazo(db.auth.getSession(),"verificar sua sessão");
  if(error||!data.session){location.replace("login.html");return}
  usuario=data.session.user;
+ el("status").textContent="Conferindo suas permissões...";
  const acesso=await comPrazo(db.rpc("nightlife_obter_nivel_acesso"),"validar suas permissões");
  if(acesso.error){el("status").textContent="Não foi possível validar seu acesso: "+acesso.error.message;return}
  if(acesso.data?.nivel==="supremo"){location.replace("administracao.html");return}
@@ -65,12 +59,12 @@ async function iniciar(){
  if(acesso.data?.nivel!=="proprietario") throw new Error("Esta conta não está cadastrada como proprietária. Confira a permissão no Supabase.");
  el("ola").textContent="Conectado como: "+(usuario.email||"sua conta");
  el("status").style.display="none";el("conteudo").style.display="block";
- const vinculo=await comPrazo(db.rpc("nightlife_vincular_estabelecimentos_proprietario"),"localizar seus estabelecimentos");
- const {data,error:erro}=await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
+ el("status").textContent="Carregando seus estabelecimentos...";
+ const {data,error:erro} =await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
  if(erro){el("estabelecimento").replaceChildren(texto("option","Erro ao carregar: "+erro.message));return}
  estabelecimentos=data||[];
  const select=el("estabelecimento");select.replaceChildren();
- if(!estabelecimentos.length){select.append(texto("option","Nenhum estabelecimento vinculado"));el("dadosEstabelecimento").textContent=vinculo.error?"Não foi possível localizar seus cadastros: "+vinculo.error.message:"Ainda não encontramos estabelecimentos vinculados a este e-mail. Confira se o e-mail informado no cadastro é o mesmo desta conta.";return}
+ if(!estabelecimentos.length){select.append(texto("option","Nenhum estabelecimento vinculado"));el("dadosEstabelecimento").textContent=vinculo.error?"Não foi possível localizar seus cadastros: "+vinculo.error.message:"Ainda não encontramos estabelecimentos vinculados a esta conta.";return}
  estabelecimentos.forEach(item=>{const op=texto("option",item.nome||"Estabelecimento");op.value=item.id;select.append(op)});
  select.addEventListener("change",carregarConteudos);
  await carregarConteudos();await carregarPix();
@@ -150,8 +144,4 @@ iniciar().catch(erro=>{
  el("status").textContent="Não foi possível abrir seu painel. "+(erro?.message||"Erro inesperado.")+" Atualize a página. Se continuar, envie esta mensagem ao suporte.";
 });
 
-}).catch(erro=>{
- el("status").style.display="block";
- el("status").textContent="Falha ao iniciar o NIGHTlife: "+(erro?.message||"Erro inesperado.");
-});
 </script></body></html>

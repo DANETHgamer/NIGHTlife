@@ -27,7 +27,7 @@
 <script>
 window.addEventListener("error",function(e){
  const s=document.getElementById("status");
- if(s){s.style.display="block";s.textContent="Erro no painel: "+(e.message||"falha ao executar JavaScript")+(e.filename?" ("+e.filename.split("/").pop()+":"+e.lineno+")":"");}
+ if(s){s.style.display="block";s.textContent="Erro no painel: "+(e.message||"falha ao executar JavaScript")+(e.filename?" ("+e.filename.split("/").pop()+":"+e.lineno+")":"")+(e.error&&e.error.stack?" — "+e.error.stack:"");}
 });
 window.addEventListener("unhandledrejection",function(e){
  const s=document.getElementById("status");
@@ -35,7 +35,7 @@ window.addEventListener("unhandledrejection",function(e){
  if(s){s.style.display="block";s.textContent="Erro de conexão do painel: "+(r&&r.message?r.message:String(r||"erro desconhecido"));}
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.getElementById('status').textContent='Não foi possível carregar a biblioteca de conexão do NIGHTlife (CDN).';"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.getElementById('status').textContent='Não foi possível carregar a biblioteca de conexão do NIGHTlife (CDN).';"></script>
 <script>
 "use strict";
 const el=id=>document.getElementById(id);

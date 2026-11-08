@@ -439,10 +439,17 @@ async function carregarEstabelecimento() {
   area.innerHTML = "";
   plano.innerHTML = "";
 
-  const { data, error } = await supabaseClient
+  let consultaEstabelecimentos = await supabaseClient
     .from("estabelecimentos")
     .select("id,nome,endereco,telefone,horario_funcionamento,tipo,descricao,ativo,status_plano,mensalidade,teste_termina_em,vencimento_em,tolerancia_ate")
     .eq("usuario_id", usuarioAtual.id);
+  if (consultaEstabelecimentos.error && /ativo/i.test(consultaEstabelecimentos.error.message || "")) {
+    consultaEstabelecimentos = await supabaseClient
+      .from("estabelecimentos")
+      .select("id,nome,endereco,telefone,horario_funcionamento,tipo,descricao,status_plano,mensalidade,teste_termina_em,vencimento_em,tolerancia_ate")
+      .eq("usuario_id", usuarioAtual.id);
+  }
+  const { data, error } = consultaEstabelecimentos;
 
   if (error) {
     estabelecimentosDoUsuario = [];

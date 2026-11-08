@@ -35,7 +35,7 @@ window.addEventListener("unhandledrejection",function(e){
  if(s){s.style.display="block";s.textContent="Erro de conexão do painel: "+(r&&r.message?r.message:String(r||"erro desconhecido"));}
 });
 </script>
-<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.getElementById('status').textContent='Não foi possível carregar a biblioteca de conexão do NIGHTlife (CDN).';"></script>
+<script crossorigin="anonymous" src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js" onerror="document.getElementById('status').textContent='Falha ao carregar a biblioteca Supabase. O endereço externo não respondeu.';"></script>
 <script>
 "use strict";
 const el=id=>document.getElementById(id);

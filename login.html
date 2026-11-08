@@ -99,9 +99,22 @@ document.getElementById("formLogin").addEventListener("submit", async (event) =>
     return;
   }
 
-  mensagem.textContent = "Login realizado! Abrindo painel...";
+  mensagem.textContent = "Login realizado! Verificando seu nível de acesso...";
 
-  window.location.href = "painel.html";
+  const { data: acesso, error: acessoError } = await supabaseClient.rpc("nightlife_obter_nivel_acesso");
+  if (acessoError) {
+    mensagem.textContent = "Não foi possível verificar as permissões. Execute a migration de administração regional no Supabase. " + acessoError.message;
+    botao.disabled = false;
+    return;
+  }
+
+  if (acesso?.nivel === "supremo") {
+    window.location.href = "painel.html";
+  } else if (acesso?.nivel === "regional") {
+    window.location.href = "central-controle.html";
+  } else {
+    window.location.href = "painel-proprietario.html";
+  }
 });
 </script>
 

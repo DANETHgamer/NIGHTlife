@@ -594,7 +594,9 @@ async function carregarAdminsRegionais() {
     if (admin) {
       const email = document.createElement("div");
       email.className = "admin-regional-detalhe";
-      email.textContent = admin.email || "";
+      email.textContent = admin.email || "";      const dadosPessoais = document.createElement("div");
+      dadosPessoais.className = "admin-regional-detalhe";
+      dadosPessoais.textContent = "CPF: " + (admin.cpf || "—") + " | Telefone: " + (admin.telefone || "—");
       const status = document.createElement("div");
       status.className = "admin-regional-status";
       status.textContent = admin.ativo ? "● Acesso ativo" : "● Acesso suspenso";
@@ -639,7 +641,7 @@ async function carregarAdminsRegionais() {
       });
 
       acoes.append(editar, botao, excluir);
-      card.append(email, status, acoes);
+      card.append(email, dadosPessoais, status, acoes);
     }
 
     area.appendChild(card);

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<title>NIGHTlife | Central do cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#351018 0%,#101010 48%,#080808 100%);color:#fff;font-family:Arial,sans-serif}
+header{padding:28px 16px;text-align:center;border-bottom:2px solid #ff1738;background:#100b0d}
+.logo{font:800 clamp(28px,7vw,42px) Orbitron,sans-serif;color:#e5e5e5;letter-spacing:1px}.logo span{color:#ff1738}
+.slogan{color:#bbb;font:18px Oswald,sans-serif;letter-spacing:3px;margin:10px 0 0}
+main{max-width:850px;margin:auto;padding:28px 16px 50px}
+h1{font:600 28px Oswald,sans-serif;border-left:4px solid #ff1738;padding-left:13px}
+.intro{color:#ccc;line-height:1.7}
+.card{background:linear-gradient(145deg,#1c1c1c,#101010);border:1px solid #383838;border-left:4px solid #ff1738;border-radius:13px;padding:22px;margin:18px 0;box-shadow:0 8px 25px #0007}
+.card h2{margin:0 0 10px;color:#ff526b;font:600 23px Oswald,sans-serif}
+.card p{color:#ccc;line-height:1.65}
+.contato{display:flex;flex-wrap:wrap;gap:12px;margin-top:17px}
+.botao{display:inline-block;flex:1 1 220px;text-align:center;padding:14px 18px;border-radius:8px;text-decoration:none;font-weight:bold;color:#fff;background:linear-gradient(135deg,#ff1738,#a90020);border:1px solid #ff526b}
+.botao.email{background:#171717;border-color:#666}
+.botao:hover{filter:brightness(1.15)}
+.detalhe{color:#999;font-size:13px;overflow-wrap:anywhere}
+footer{text-align:center;padding:24px;color:#888;border-top:1px solid #333;font-size:12px;letter-spacing:2px}
+.menu-flutuante{position:fixed;top:14px;right:16px;z-index:9999}.menu-abrir{width:48px;height:46px;border:1px solid #ff1738;border-radius:9px;background:#111;color:#fff;font-size:27px;cursor:pointer}.menu-links{display:none;position:absolute;right:0;top:54px;width:235px;padding:10px;background:#111;border:1px solid #ff1738;border-radius:12px;box-shadow:0 12px 35px #000}.menu-links.aberto{display:grid;gap:7px}.menu-links a{display:block;padding:12px;border:1px solid #383838;border-radius:8px;color:#eee;text-decoration:none;font-weight:bold;background:#191919}.menu-links a:hover{border-color:#ff1738;color:#ff526b}
+</style>
+</head>
+<body>
+<header><div class="logo">NIGHT<span>life</span></div><p class="slogan">CENTRAL DO CLIENTE</p></header>
+<nav class="menu-flutuante" aria-label="Menu principal"><button class="menu-abrir" id="menuAbrir" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button><div class="menu-links" id="menuLinks"><a href="index.html">Início / Área do cliente</a><a href="cadastro.html">Cadastrar estabelecimento</a><a href="login.html">Área do proprietário</a></div></nav>
+<main>
+<h1>Como podemos ajudar?</h1>
+<p class="intro">Precisa de ajuda com o NIGHTlife, encontrou algum problema ou quer falar com a nossa equipe? Entre em contato por um dos canais abaixo. Será um prazer atender você.</p>
+<section class="card">
+<h2>💬 Atendimento pelo WhatsApp</h2>
+<p>Fale diretamente com a equipe do NIGHTlife para tirar dúvidas, pedir ajuda ou informar algum problema.</p>
+<div class="contato"><a class="botao" href="https://wa.me/5547992862110?text=Ol%C3%A1%21%20Preciso%20de%20ajuda%20com%20o%20NIGHTlife." target="_blank" rel="noopener">Conversar pelo WhatsApp</a></div>
+<p class="detalhe">WhatsApp: (47) 99286-2110</p>
+</section>
+<section class="card">
+<h2>✉️ Atendimento por e-mail</h2>
+<p>Se preferir, envie sua dúvida ou solicitação por e-mail. Responderemos assim que possível.</p>
+<div class="contato"><a class="botao email" href="mailto:danethgamer5@gmail.com?subject=Atendimento%20NIGHTlife">Enviar um e-mail</a></div>
+<p class="detalhe">danethgamer5@gmail.com</p>
+</section>
+<section class="card">
+<h2>🌙 Sobre o atendimento</h2>
+<p>Ao entrar em contato, informe seu nome e explique brevemente o que aconteceu. Se o assunto for sobre um estabelecimento, informe também o nome do local para facilitar o atendimento.</p>
+</section>
+</main>
+<footer>NIGHTlife © 2026 — SUA CIDADE. SUA NOITE. SEU ROLÊ.</footer>
+<script>
+const abrir=document.getElementById("menuAbrir"),links=document.getElementById("menuLinks");
+abrir.addEventListener("click",()=>{const ativo=links.classList.toggle("aberto");abrir.setAttribute("aria-expanded",String(ativo));});
+document.addEventListener("click",e=>{if(!e.target.closest(".menu-flutuante")){links.classList.remove("aberto");abrir.setAttribute("aria-expanded","false");}});
+</script>
+</body>
+</html>

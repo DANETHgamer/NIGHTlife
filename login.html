@@ -83,9 +83,7 @@ form.addEventListener("submit",async(event)=>{
 (async()=>{
   const {data,error}=await db.auth.getSession();
   if(!error&&data.session){
-    botao.disabled=true;
-    try{await encaminharConta();}
-    catch(e){mensagem.textContent=e.message;botao.disabled=false;}
+    mensagem.textContent="Já existe uma conta conectada neste navegador. Informe o e-mail e a senha da conta que deseja acessar; o NIGHTlife trocará a sessão.";
   }
 })();
 </script>

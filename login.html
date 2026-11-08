@@ -54,7 +54,7 @@ const mensagem=document.getElementById("mensagem");
 function destinoDoNivel(nivel){
   if(nivel==="supremo") return "administracao.html";
   if(nivel==="regional") return "central-controle.html";
-  if(nivel==="proprietario") throw new Error("Esta conta não possui acesso administrativo ao NIGHTlife. Entre em contato com o Administrador Supremo.");
+  if(nivel==="proprietario") return "proprietario.html";
   throw new Error("Sua conta não possui um nível de acesso reconhecido.");
 }
 async function encaminharConta(){

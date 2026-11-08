@@ -438,6 +438,17 @@ async function iniciarPainel() {
     return;
   }
 
+  if (nivelAcesso?.nivel !== "proprietario") {
+    document.getElementById("verificando").textContent =
+      "Acesso não autorizado. Esta área é exclusiva de contas de proprietários. Entre com a conta correta.";
+    const link = document.createElement("a");
+    link.href = "login.html";
+    link.textContent = "Voltar ao login";
+    link.className = "botao";
+    document.getElementById("verificando").appendChild(link);
+    return;
+  }
+
   document.getElementById("email").textContent =
     "Conectado como: " + usuarioAtual.email;
 
@@ -454,9 +465,11 @@ async function iniciarPainel() {
 async function carregarEstabelecimento() {
   const area = document.getElementById("estabelecimento");
   const plano = document.getElementById("plano");
-
+  const formularios = document.getElementById("formulariosEdicao");
   area.innerHTML = "";
   plano.innerHTML = "";
+  if (formularios) formularios.innerHTML = "";
+  document.getElementById("mensagemEdicao").textContent = "";
 
   let consultaEstabelecimentos = await supabaseClient
     .from("estabelecimentos")

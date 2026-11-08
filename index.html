@@ -433,7 +433,7 @@ footer p {
     .lista { grid-template-columns: 1fr; }
 }
 .menu-flutuante{position:fixed;top:14px;right:16px;z-index:9999}.menu-abrir{width:48px;height:46px;border:1px solid #ff1738;border-radius:9px;background:#111;color:#fff;font-size:27px;cursor:pointer}.menu-links{display:none;position:absolute;right:0;top:54px;width:235px;padding:10px;background:#111;border:1px solid #ff1738;border-radius:12px;box-shadow:0 12px 35px #000}.menu-links.aberto{display:grid;gap:7px}.menu-links a{display:block;padding:12px;border:1px solid #383838;border-radius:8px;color:#eee;text-decoration:none;font-weight:bold;background:#191919}.menu-links a:hover{border-color:#ff1738;color:#ff526b}.menu-links .menu-admin[hidden]{display:none}
-</style>
+.busca-cidades{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:0 0 18px;padding:16px;background:#151515;border:1px solid #383838;border-radius:12px}.busca-cidades label{display:block;color:#bbb;font-size:13px;margin-bottom:5px}.busca-cidades input,.busca-cidades select{width:100%;padding:12px;border:1px solid #444;border-radius:7px;background:#090909;color:#fff}.busca-cidades button{align-self:end;padding:12px;border:1px solid #ff1738;border-radius:7px;background:linear-gradient(135deg,#ff1738,#a90020);color:#fff;font-weight:bold;cursor:pointer}.cidade-destaque{color:#ff7184;font-size:13px;margin:0 0 12px}@media(max-width:500px){.busca-cidades{grid-template-columns:1fr}}\n</style>
 </head>
 
 <body>
@@ -467,6 +467,13 @@ footer p {
             <h2>Estabelecimentos</h2>
         </div>
 
+        <div class="busca-cidades">
+            <div><label for="filtroEstado">Estado</label><select id="filtroEstado"><option value="">Todos os estados</option></select></div>
+            <div><label for="filtroCidade">Cidade</label><select id="filtroCidade"><option value="">Todas as cidades</option></select></div>
+            <div><label for="pesquisaEstabelecimento">Nome do estabelecimento</label><input id="pesquisaEstabelecimento" type="search" placeholder="Ex.: bar, balada, restaurante"></div>
+            <button id="buscarEstabelecimentos" type="button">Pesquisar</button>
+        </div>
+        <p class="cidade-destaque">Encontre lugares por estado e cidade. Começamos pelas 10 cidades prioritárias de Santa Catarina.</p>
         <p id="mensagemEstabelecimentos" class="mensagem">
             Carregando estabelecimentos...
         </p>
@@ -605,18 +612,29 @@ async function carregarEstabelecimentos() {
     mensagem.textContent = "Carregando estabelecimentos...";
     lista.innerHTML = "";
 
-    let consultaEstabelecimentos = await supabaseClient
+    const estadoFiltro = document.getElementById("filtroEstado")?.value || "";
+    const cidadeFiltro = document.getElementById("filtroCidade")?.value || "";
+    const termoFiltro = (document.getElementById("pesquisaEstabelecimento")?.value || "").trim();
+
+    let consultaEstabelecimentos = supabaseClient
         .from("estabelecimentos")
-        .select("id,nome,endereco,telefone,horario_funcionamento,ativo")
+        .select("id,nome,endereco,telefone,horario_funcionamento,ativo,cidade,estado")
         .eq("ativo", true)
-        .in("status_plano", ["teste", "ativo", "tolerancia"])
-        .order("criado_em", { ascending: false });
+        .in("status_plano", ["teste", "ativo", "tolerancia"]);
+    if (estadoFiltro) consultaEstabelecimentos = consultaEstabelecimentos.eq("estado", estadoFiltro);
+    if (cidadeFiltro) consultaEstabelecimentos = consultaEstabelecimentos.eq("cidade", cidadeFiltro);
+    if (termoFiltro) consultaEstabelecimentos = consultaEstabelecimentos.ilike("nome", "%" + termoFiltro + "%");
+    consultaEstabelecimentos = await consultaEstabelecimentos.order("criado_em", { ascending: false });
+
     if (consultaEstabelecimentos.error && /ativo/i.test(consultaEstabelecimentos.error.message || "")) {
-        consultaEstabelecimentos = await supabaseClient
+        let consultaAlternativa = supabaseClient
             .from("estabelecimentos")
-            .select("id,nome,endereco,telefone,horario_funcionamento")
-            .in("status_plano", ["teste", "ativo", "tolerancia"])
-            .order("criado_em", { ascending: false });
+            .select("id,nome,endereco,telefone,horario_funcionamento,cidade,estado")
+            .in("status_plano", ["teste", "ativo", "tolerancia"]);
+        if (estadoFiltro) consultaAlternativa = consultaAlternativa.eq("estado", estadoFiltro);
+        if (cidadeFiltro) consultaAlternativa = consultaAlternativa.eq("cidade", cidadeFiltro);
+        if (termoFiltro) consultaAlternativa = consultaAlternativa.ilike("nome", "%" + termoFiltro + "%");
+        consultaEstabelecimentos = await consultaAlternativa.order("criado_em", { ascending: false });
     }
     const { data, error } = consultaEstabelecimentos;
 
@@ -1131,6 +1149,49 @@ async function iniciarPagina() {
     verificarLinkAdministrador();
     await carregarEstabelecimentos();
     await carregarEventos();
+}
+
+async function carregarCatalogoCidades() {
+    const estadoSelect = document.getElementById("filtroEstado");
+    const cidadeSelect = document.getElementById("filtroCidade");
+    const { data, error } = await supabaseClient
+        .from("nightlife_cidades")
+        .select("estado,cidade,prioridade")
+        .eq("ativa", true)
+        .order("estado")
+        .order("prioridade");
+    if (error) {
+        console.error("Não foi possível carregar o catálogo de cidades:", error.message);
+        return;
+    }
+    const cidades = data || [];
+    [...new Set(cidades.map(item => item.estado))].forEach(estado => {
+        const option = document.createElement("option");
+        option.value = estado;
+        option.textContent = estado;
+        estadoSelect.appendChild(option);
+    });
+    function atualizarCidades() {
+        const estado = estadoSelect.value;
+        cidadeSelect.replaceChildren();
+        const todas = document.createElement("option");
+        todas.value = "";
+        todas.textContent = estado ? "Todas as cidades do estado" : "Todas as cidades";
+        cidadeSelect.appendChild(todas);
+        cidades.filter(item => !estado || item.estado === estado).forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.cidade;
+            option.textContent = item.cidade;
+            cidadeSelect.appendChild(option);
+        });
+    }
+    estadoSelect.addEventListener("change", () => { atualizarCidades(); carregarEstabelecimentos().then(carregarEventos); });
+    cidadeSelect.addEventListener("change", () => carregarEstabelecimentos().then(carregarEventos));
+    document.getElementById("buscarEstabelecimentos").addEventListener("click", () => carregarEstabelecimentos().then(carregarEventos));
+    document.getElementById("pesquisaEstabelecimento").addEventListener("keydown", event => {
+        if (event.key === "Enter") carregarEstabelecimentos().then(carregarEventos);
+    });
+    atualizarCidades();
 }
 
 iniciarPagina();

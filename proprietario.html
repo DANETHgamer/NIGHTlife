@@ -48,7 +48,7 @@ if (!window.supabase || typeof window.supabase.createClient !== "function") {
  el("status").textContent = "A conexão do NIGHTlife não carregou. Verifique sua internet e atualize a página."; 
  throw new Error("Biblioteca do Supabase não carregada.");
 }
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const db=window.supabase.createClient("https://crmfxxsrhdncvaaxezvz.supabase.co","sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 function comPrazo(promessa, descricao, ms=15000) {
  return Promise.race([promessa,new Promise((_, rejeitar)=>setTimeout(()=>rejeitar(new Error("Tempo esgotado ao "+descricao+". Verifique sua conexão e tente novamente.")),ms))]);
 }

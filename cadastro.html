@@ -232,8 +232,9 @@ placeholder="E-mail" required>
 <input id="telefone" type="tel"
 placeholder="Telefone">
 
-<input id="cidade" type="text"
-placeholder="Cidade" required>
+<select id="estado" required><option value="">Selecione o estado</option></select>
+
+<select id="cidade" required><option value="">Selecione a cidade</option></select>
 
 <input id="endereco" type="text"
 placeholder="Endereço" required>
@@ -265,7 +266,44 @@ Cadastrar
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+async function carregarCidadesCadastro() {
+    const estado = document.getElementById("estado");
+    const cidade = document.getElementById("cidade");
+    const { data, error } = await supabaseClient
+        .from("nightlife_cidades")
+        .select("estado,cidade,prioridade")
+        .eq("ativa", true)
+        .order("estado")
+        .order("prioridade");
+    if (error) {
+        mensagem.textContent = "Não foi possível carregar as cidades disponíveis. Tente novamente mais tarde.";
+        console.error(error);
+        return;
+    }
+    const cidades = data || [];
+    [...new Set(cidades.map(item => item.estado))].forEach(uf => {
+        const option = document.createElement("option");
+        option.value = uf;
+        option.textContent = uf;
+        estado.appendChild(option);
+    });
+    estado.addEventListener("change", () => {
+        cidade.replaceChildren();
+        const inicial = document.createElement("option");
+        inicial.value = "";
+        inicial.textContent = "Selecione a cidade";
+        cidade.appendChild(inicial);
+        cidades.filter(item => item.estado === estado.value).forEach(item => {
+            const option = document.createElement("option");
+            option.value = item.cidade;
+            option.textContent = item.cidade;
+            cidade.appendChild(option);
+        });
+    });
+}
+carregarCidadesCadastro();
+</script>
 
 <script>
 const SUPABASE_URL =
@@ -291,6 +329,8 @@ formulario.addEventListener("submit", async function(event) {
 
     const dados = {
         nome: document.getElementById("nome").value.trim(),
+        cidade: document.getElementById("cidade").value,
+        estado: document.getElementById("estado").value,
         endereco:
             document.getElementById("endereco").value.trim() +
             ", " +

@@ -28,7 +28,14 @@
 <script>
 "use strict";
 const URL="https://crmfxxsrhdncvaaxezvz.supabase.co",KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q",BUCKET="nightlife-estabelecimentos";
+if (!window.supabase || typeof window.supabase.createClient !== "function") {
+ el("status").textContent = "A conexão do NIGHTlife não carregou. Verifique sua internet e atualize a página."; 
+ throw new Error("Biblioteca do Supabase não carregada.");
+}
 const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+function comPrazo(promessa, descricao, ms=15000) {
+ return Promise.race([promessa,new Promise((_, rejeitar)=>setTimeout(()=>rejeitar(new Error("Tempo esgotado ao "+descricao+". Verifique sua conexão e tente novamente.")),ms))]);
+}
 const el=id=>document.getElementById(id);
 let usuario=null,estabelecimentos=[];
 function texto(tag,valor){const n=document.createElement(tag);n.textContent=valor;return n}
@@ -36,17 +43,19 @@ function mensagem(id,valor){el(id).textContent=valor}
 function idAtual(){return el("estabelecimento").value}
 function dataHoje(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
 async function iniciar(){
- const {data,error}=await db.auth.getSession();
+ el("status").textContent="Verificando sua conta...";
+ const {data,error}=await comPrazo(db.auth.getSession(),"verificar sua sessão");
  if(error||!data.session){location.replace("login.html");return}
  usuario=data.session.user;
- const acesso=await db.rpc("nightlife_obter_nivel_acesso");
+ const acesso=await comPrazo(db.rpc("nightlife_obter_nivel_acesso"),"validar suas permissões");
  if(acesso.error){el("status").textContent="Não foi possível validar seu acesso: "+acesso.error.message;return}
  if(acesso.data?.nivel==="supremo"){location.replace("administracao.html");return}
  if(acesso.data?.nivel==="regional"){location.replace("central-controle.html");return}
+ if(acesso.data?.nivel!=="proprietario") throw new Error("Esta conta não está cadastrada como proprietária. Confira a permissão no Supabase.");
  el("ola").textContent="Conectado como: "+(usuario.email||"sua conta");
  el("status").style.display="none";el("conteudo").style.display="block";
- const vinculo=await db.rpc("nightlife_vincular_estabelecimentos_proprietario");
- const {data,error:erro}=await db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false});
+ const vinculo=await comPrazo(db.rpc("nightlife_vincular_estabelecimentos_proprietario"),"localizar seus estabelecimentos");
+ const {data,error:erro}=await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
  if(erro){el("estabelecimento").replaceChildren(texto("option","Erro ao carregar: "+erro.message));return}
  estabelecimentos=data||[];
  const select=el("estabelecimento");select.replaceChildren();
@@ -124,5 +133,9 @@ async function carregarPix(){
 }
 el("inicioPromocao").value=dataHoje();el("fimPromocao").value=dataHoje();
 el("sair").addEventListener("click",async()=>{await db.auth.signOut();location.replace("login.html")});
-iniciar();
+iniciar().catch(erro=>{
+ console.error("Erro ao iniciar o painel do proprietário:",erro);
+ el("status").style.display="block";
+ el("status").textContent="Não foi possível abrir seu painel. "+(erro?.message||"Erro inesperado.")+" Atualize a página. Se continuar, envie esta mensagem ao suporte.";
+});
 </script></body></html>

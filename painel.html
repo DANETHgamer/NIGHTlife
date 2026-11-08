@@ -325,10 +325,17 @@ async function carregarEstabelecimentos() {
   mensagem.textContent = "Carregando estabelecimentos...";
   lista.innerHTML = "";
 
-  const { data, error } = await supabaseClient
+  let consultaEstabelecimentos = await supabaseClient
     .from("estabelecimentos")
     .select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo")
     .order("criado_em", { ascending: false });
+  if (consultaEstabelecimentos.error && /ativo/i.test(consultaEstabelecimentos.error.message || "")) {
+    consultaEstabelecimentos = await supabaseClient
+      .from("estabelecimentos")
+      .select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em")
+      .order("criado_em", { ascending: false });
+  }
+  const { data, error } = consultaEstabelecimentos;
 
   if (error) {
     mensagem.textContent = "Erro: " + error.message;

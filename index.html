@@ -1166,44 +1166,79 @@ const nomesEstados = {
 async function carregarCatalogoCidades() {
     const estadoSelect = document.getElementById("filtroEstado");
     const cidadeSelect = document.getElementById("filtroCidade");
-    const { data, error } = await supabaseClient
-        .from("nightlife_cidades")
-        .select("estado,cidade,prioridade")
-        .eq("ativa", true)
-        .order("estado")
-        .order("prioridade");
-    if (error) {
-        console.error("Não foi possível carregar o catálogo de cidades:", error.message);
-        return;
-    }
-    const cidades = data || [];
-    [...new Set(cidades.map(item => item.estado))].forEach(estado => {
-        const option = document.createElement("option");
-        option.value = estado;
-        option.textContent = estado + " — " + (nomesEstados[estado] || estado);
-        estadoSelect.appendChild(option);
-    });
-    function atualizarCidades() {
+    const botaoBusca = document.getElementById("buscarEstabelecimentos");
+    const campoBusca = document.getElementById("pesquisaEstabelecimento");
+
+    // Os estados aparecem sempre, mesmo que ainda não exista estabelecimento cadastrado.
+    Object.entries(nomesEstados)
+        .sort((a, b) => a[1].localeCompare(b[1], "pt-BR"))
+        .forEach(([sigla, nome]) => {
+            const option = document.createElement("option");
+            option.value = sigla;
+            option.textContent = sigla + " — " + nome;
+            estadoSelect.appendChild(option);
+        });
+
+    let requisicaoCidades = 0;
+
+    async function atualizarCidades() {
         const estado = estadoSelect.value;
+        const numeroRequisicao = ++requisicaoCidades;
         cidadeSelect.replaceChildren();
+
         const todas = document.createElement("option");
         todas.value = "";
         todas.textContent = estado ? "Todas as cidades do estado" : "Todas as cidades";
         cidadeSelect.appendChild(todas);
-        cidades.filter(item => !estado || item.estado === estado).forEach(item => {
-            const option = document.createElement("option");
-            option.value = item.cidade;
-            option.textContent = item.cidade;
-            cidadeSelect.appendChild(option);
-        });
+
+        if (!estado) return;
+
+        const carregando = document.createElement("option");
+        carregando.value = "";
+        carregando.textContent = "Carregando cidades...";
+        carregando.disabled = true;
+        cidadeSelect.appendChild(carregando);
+
+        try {
+            const resposta = await fetch(
+                "https://servicodados.ibge.gov.br/api/v1/localidades/estados/" +
+                encodeURIComponent(estado) + "/municipios?orderBy=nome"
+            );
+            if (!resposta.ok) throw new Error("Falha ao consultar o catálogo do IBGE.");
+            const cidades = await resposta.json();
+
+            // Ignora respostas antigas se o usuário trocar de estado rapidamente.
+            if (numeroRequisicao !== requisicaoCidades) return;
+
+            cidadeSelect.replaceChildren();
+            cidadeSelect.appendChild(todas);
+
+            cidades.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.nome;
+                option.textContent = item.nome;
+                cidadeSelect.appendChild(option);
+            });
+        } catch (erro) {
+            if (numeroRequisicao !== requisicaoCidades) return;
+            console.error("Erro ao carregar cidades do IBGE:", erro);
+            cidadeSelect.replaceChildren();
+            const indisponivel = document.createElement("option");
+            indisponivel.value = "";
+            indisponivel.textContent = "Não foi possível carregar. Tente novamente.";
+            cidadeSelect.appendChild(indisponivel);
+        }
     }
-    estadoSelect.addEventListener("change", () => { atualizarCidades(); carregarEstabelecimentos().then(carregarEventos); });
+
+    estadoSelect.addEventListener("change", async () => {
+        await atualizarCidades();
+        carregarEstabelecimentos().then(carregarEventos);
+    });
     cidadeSelect.addEventListener("change", () => carregarEstabelecimentos().then(carregarEventos));
-    document.getElementById("buscarEstabelecimentos").addEventListener("click", () => carregarEstabelecimentos().then(carregarEventos));
-    document.getElementById("pesquisaEstabelecimento").addEventListener("keydown", event => {
+    botaoBusca.addEventListener("click", () => carregarEstabelecimentos().then(carregarEventos));
+    campoBusca.addEventListener("keydown", event => {
         if (event.key === "Enter") carregarEstabelecimentos().then(carregarEventos);
     });
-    atualizarCidades();
 }
 
 iniciarPagina();

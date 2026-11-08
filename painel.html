@@ -332,8 +332,12 @@ async function iniciarPainel() {
   }
 
   if (acesso?.nivel !== "supremo") {
-    verificando.textContent =
-      "Acesso negado. Esta área é exclusiva do Administrador Supremo.";
+    verificando.textContent = "Acesso negado. Redirecionando para sua área reservada...";
+    if (acesso?.nivel === "regional") {
+      window.location.replace("central-controle.html");
+    } else {
+      window.location.replace("painel-proprietario.html");
+    }
     return;
   }
 

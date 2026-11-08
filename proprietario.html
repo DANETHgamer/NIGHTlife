@@ -27,6 +27,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 "use strict";
+const el=id=>document.getElementById(id);
 const URL="https://crmfxxsrhdncvaaxezvz.supabase.co",KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q",BUCKET="nightlife-estabelecimentos";
 if (!window.supabase || typeof window.supabase.createClient !== "function") {
  el("status").textContent = "A conexão do NIGHTlife não carregou. Verifique sua internet e atualize a página."; 
@@ -36,7 +37,6 @@ const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRef
 function comPrazo(promessa, descricao, ms=15000) {
  return Promise.race([promessa,new Promise((_, rejeitar)=>setTimeout(()=>rejeitar(new Error("Tempo esgotado ao "+descricao+". Verifique sua conexão e tente novamente.")),ms))]);
 }
-const el=id=>document.getElementById(id);
 let usuario=null,estabelecimentos=[];
 function texto(tag,valor){const n=document.createElement(tag);n.textContent=valor;return n}
 function mensagem(id,valor){el(id).textContent=valor}

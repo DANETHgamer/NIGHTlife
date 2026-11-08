@@ -5,7 +5,7 @@
 <title>NIGHTlife | Área do Proprietário</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Oswald:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#301017,#080808 60%);color:#eee;font:15px Arial,sans-serif}.top{padding:20px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#100b0d;border-bottom:2px solid #ff1738}.logo{font:800 26px Orbitron,sans-serif}.logo span{font:normal 26px Pacifico,cursive;color:#ff1738}button,a.btn{border:1px solid #ff526b;border-radius:8px;padding:11px 15px;background:linear-gradient(135deg,#ff1738,#a80020);color:white;font-weight:bold;cursor:pointer;text-decoration:none}.secondary{background:#242424!important;border-color:#484848!important}main{max-width:1050px;margin:auto;padding:28px 16px 55px}h1,h2,h3{font-family:Oswald,sans-serif}h1{font-size:32px;margin:0 0 5px}.muted{color:#aaa;line-height:1.6}.panel{background:linear-gradient(145deg,#191919,#101010);border:1px solid #383838;border-radius:13px;padding:20px;margin:18px 0}.panel h2{margin:0 0 12px;border-left:4px solid #ff1738;padding-left:12px}.item{padding:14px 0;border-bottom:1px solid #333}.item:last-child{border:0}.item strong{font:600 20px Oswald}.pix{font-size:18px;font-weight:bold;color:#ff8b9c;overflow-wrap:anywhere;padding:12px;background:#090909;border:1px dashed #63303a;border-radius:8px}.msg{color:#ffb7c1;white-space:pre-wrap;line-height:1.5}.rodape{text-align:center;color:#777;padding:22px;font-size:11px;letter-spacing:2px}#conteudo{display:none}button:disabled{opacity:.5;cursor:wait}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#301017,#080808 60%);color:#eee;font:15px Arial,sans-serif}.top{padding:20px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#100b0d;border-bottom:2px solid #ff1738}.logo{font:800 26px Orbitron,sans-serif}.logo span{font:normal 26px Pacifico,cursive;color:#ff1738}button,a.btn{border:1px solid #ff526b;border-radius:8px;padding:11px 15px;background:linear-gradient(135deg,#ff1738,#a80020);color:white;font-weight:bold;cursor:pointer;text-decoration:none}.secondary{background:#242424!important;border-color:#484848!important}main{max-width:1050px;margin:auto;padding:28px 16px 55px}h1,h2,h3{font-family:Oswald,sans-serif}h1{font-size:32px;margin:0 0 5px}.muted{color:#aaa;line-height:1.6}.panel{background:linear-gradient(145deg,#191919,#101010);border:1px solid #383838;border-radius:13px;padding:20px;margin:18px 0}.panel h2{margin:0 0 12px;border-left:4px solid #ff1738;padding-left:12px}.item{padding:14px 0;border-bottom:1px solid #333}.item:last-child{border:0}.item strong{font:600 20px Oswald}.pix{font-size:18px;font-weight:bold;color:#ff8b9c;overflow-wrap:anywhere;padding:12px;background:#090909;border:1px dashed #63303a;border-radius:8px}.msg{color:#ffb7c1;white-space:pre-wrap;line-height:1.5}.rodape{text-align:center;color:#777;padding:22px;font-size:11px;letter-spacing:2px}#conteudo{display:none}button:disabled{opacity:.5;cursor:wait}input,textarea,select{width:100%;padding:12px;margin:7px 0;border-radius:8px;border:1px solid #444;background:#090909;color:#fff;font:15px Arial}textarea{min-height:85px;resize:vertical}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.form-grid button{align-self:end}.grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.foto{background:#0b0b0b;border:1px solid #333;border-radius:9px;padding:9px}.foto img{width:100%;height:150px;object-fit:cover;border-radius:6px}.foto button,.linha button{margin-top:8px}.linha{padding:12px 0;border-bottom:1px solid #333}.linha:last-child{border:0}.seletor{max-width:600px}.aviso{padding:12px;border-left:3px solid #ff1738;background:#190d10;color:#ddd;border-radius:6px}@media(max-width:520px){.top{align-items:flex-start}.top>div:last-child{display:flex;gap:8px;flex-wrap:wrap}.panel{padding:15px}}
 </style></head>
 <body>
 <header class="top"><div class="logo">NIGHT<span>life</span></div><div><a class="btn secondary" href="index.html">Página inicial</a> <button id="sair" type="button">Sair</button></div></header>
@@ -13,46 +13,116 @@
 <div id="status" class="panel">Verificando sua conta...</div>
 <div id="conteudo">
 <h1>Área do Proprietário</h1><p class="muted" id="ola">Bem-vindo ao seu espaço no NIGHTlife.</p>
-<section class="panel"><h2>Meus estabelecimentos</h2><p class="muted">Aqui aparecem somente os estabelecimentos vinculados à sua conta.</p><div id="lista" class="muted">Carregando...</div></section>
+<section class="panel"><h2>Meus estabelecimentos</h2><p class="muted">Você só pode administrar estabelecimentos vinculados à sua conta.</p><select id="estabelecimento" class="seletor"><option value="">Carregando seus estabelecimentos...</option></select><div id="dadosEstabelecimento" class="muted"></div></section>
+
+<section class="panel"><h2>📸 Fotos do ambiente</h2><p class="muted">Mostre aos clientes como é seu espaço: salão, mesas, decoração, bebidas e estrutura. JPG, PNG ou WEBP, até 5 MB por foto.</p><form id="formFoto"><input id="arquivoFoto" type="file" accept="image/jpeg,image/png,image/webp" required><input id="legendaFoto" type="text" maxlength="120" placeholder="Legenda da foto (opcional)"><button id="enviarFoto" type="submit">Publicar foto</button></form><p id="msgFoto" class="msg"></p><div id="listaFotos" class="grade"></div></section>
+
+<section class="panel"><h2>🎉 Criar evento ou festa</h2><p class="muted">Cadastre festas, shows, noites temáticas e outros eventos. Eles poderão aparecer na página pública do NIGHTlife.</p><form id="formEvento"><input id="nomeEvento" maxlength="100" placeholder="Nome do evento ou festa" required><textarea id="descricaoEvento" maxlength="1000" placeholder="Descrição, atrações e informações"></textarea><div class="form-grid"><input id="dataEvento" type="date" required><input id="horaEvento" type="time" required></div><button id="salvarEvento" type="submit">Publicar evento</button></form><p id="msgEvento" class="msg"></p><div id="listaEventos"></div></section>
+
+<section class="panel"><h2>🔥 Criar promoção</h2><p class="muted">Divulgue ofertas especiais com período de validade. Exemplo: happy hour, dose dupla ou desconto na entrada.</p><form id="formPromocao"><input id="tituloPromocao" maxlength="100" placeholder="Título da promoção" required><textarea id="descricaoPromocao" maxlength="700" placeholder="Descreva a oferta e as condições"></textarea><input id="precoPromocao" maxlength="60" placeholder="Preço ou benefício (opcional)"><div class="form-grid"><label class="muted">Início<input id="inicioPromocao" type="date" required></label><label class="muted">Fim<input id="fimPromocao" type="date" required></label></div><button id="salvarPromocao" type="submit">Publicar promoção</button></form><p id="msgPromocao" class="msg"></p><div id="listaPromocoes"></div></section>
+
 <section class="panel"><h2>Mensalidade e pagamento</h2><p class="muted">Use a chave Pix oficial da plataforma para realizar o pagamento. A chave é definida pelo Administrador Supremo e atualizada automaticamente para todos os proprietários.</p><div id="pix" class="pix">Carregando chave Pix...</div><p class="muted" id="pixMsg"></p></section>
 </div></main>
 <div class="rodape">NIGHTlife — SUA CIDADE. SUA NOITE. SEU ROLÊ.</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 "use strict";
-const URL="https://crmfxxsrhdncvaaxezvz.supabase.co",KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+const URL="https://crmfxxsrhdncvaaxezvz.supabase.co",KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q",BUCKET="nightlife-estabelecimentos";
 const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const el=id=>document.getElementById(id);
+let usuario=null,estabelecimentos=[];
 function texto(tag,valor){const n=document.createElement(tag);n.textContent=valor;return n}
+function mensagem(id,valor){el(id).textContent=valor}
+function idAtual(){return el("estabelecimento").value}
+function dataHoje(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
 async function iniciar(){
  const {data,error}=await db.auth.getSession();
  if(error||!data.session){location.replace("login.html");return}
- const user=data.session.user;
+ usuario=data.session.user;
  const acesso=await db.rpc("nightlife_obter_nivel_acesso");
  if(acesso.error){el("status").textContent="Não foi possível validar seu acesso: "+acesso.error.message;return}
  if(acesso.data?.nivel==="supremo"){location.replace("administracao.html");return}
  if(acesso.data?.nivel==="regional"){location.replace("central-controle.html");return}
- el("ola").textContent="Conectado como: "+(user.email||"sua conta");
+ el("ola").textContent="Conectado como: "+(usuario.email||"sua conta");
  el("status").style.display="none";el("conteudo").style.display="block";
  const vinculo=await db.rpc("nightlife_vincular_estabelecimentos_proprietario");
- if(vinculo.error)el("lista").textContent="Não foi possível vincular cadastros antigos automaticamente: "+vinculo.error.message;
- await carregarEstabelecimentos();
- await carregarPix();
+ const {data,error:erro}=await db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false});
+ if(erro){el("estabelecimento").replaceChildren(texto("option","Erro ao carregar: "+erro.message));return}
+ estabelecimentos=data||[];
+ const select=el("estabelecimento");select.replaceChildren();
+ if(!estabelecimentos.length){select.append(texto("option","Nenhum estabelecimento vinculado"));el("dadosEstabelecimento").textContent=vinculo.error?"Não foi possível localizar seus cadastros: "+vinculo.error.message:"Ainda não encontramos estabelecimentos vinculados a este e-mail. Confira se o e-mail informado no cadastro é o mesmo desta conta.";return}
+ estabelecimentos.forEach(item=>{const op=texto("option",item.nome||"Estabelecimento");op.value=item.id;select.append(op)});
+ select.addEventListener("change",carregarConteudos);
+ await carregarConteudos();await carregarPix();
 }
-async function carregarEstabelecimentos(){
- const area=el("lista");area.textContent="Carregando seus estabelecimentos...";
- const {data,error}=await db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",(await db.auth.getUser()).data.user.id).order("criado_em",{ascending:false});
- if(error){area.textContent="Erro ao carregar: "+error.message;return}
- area.replaceChildren();
- if(!data?.length){area.textContent="Ainda não encontramos estabelecimentos vinculados a este e-mail. Se você já cadastrou um estabelecimento usando este mesmo e-mail, saia e entre novamente. Se continuar sem aparecer, peça ao Administrador Supremo para conferir o vínculo.";return}
- data.forEach(item=>{const box=document.createElement("div");box.className="item";box.append(texto("strong",item.nome||"Estabelecimento"));const detalhes=[item.tipo,item.endereco,item.telefone].filter(Boolean).join(" • ");box.append(texto("p",detalhes));box.append(texto("p","Plano: "+(item.status_plano||"Aguardando definição")+" • Vencimento: "+(item.vencimento_em?new Date(item.vencimento_em).toLocaleDateString("pt-BR"):"Não informado")));box.append(texto("p",item.ativo===false?"Situação: desativado":"Situação: ativo"));area.append(box)})
+async function carregarConteudos(){
+ const id=idAtual(),item=estabelecimentos.find(x=>x.id===id);if(!id||!item)return;
+ el("dadosEstabelecimento").textContent=[item.tipo,item.endereco,item.telefone,"Plano: "+(item.status_plano||"não informado"),"Vencimento: "+(item.vencimento_em?new Date(item.vencimento_em).toLocaleDateString("pt-BR"):"não informado"),item.ativo===false?"Desativado":"Ativo"].filter(Boolean).join(" • ");
+ await Promise.all([carregarFotos(id),carregarEventos(id),carregarPromocoes(id)]);
 }
+async function carregarFotos(id){
+ const area=el("listaFotos");area.replaceChildren();
+ const {data,error}=await db.from("fotos_estabelecimentos_nightlife").select("id,caminho,legenda,criado_em").eq("estabelecimento_id",id).order("criado_em",{ascending:false});
+ if(error){area.textContent="Fotos ainda não disponíveis. Verifique se a atualização do banco foi executada.";return}
+ if(!data?.length){area.textContent="Você ainda não publicou fotos.";return}
+ data.forEach(f=>{const card=document.createElement("div");card.className="foto";const img=document.createElement("img");img.src=db.storage.from(BUCKET).getPublicUrl(f.caminho).data.publicUrl;img.alt=f.legenda||"Foto do estabelecimento";const legenda=texto("p",f.legenda||"Foto do ambiente");const btn=texto("button","Excluir foto");btn.type="button";btn.addEventListener("click",()=>excluirFoto(f));card.append(img,legenda,btn);area.append(card)});
+}
+async function excluirFoto(f){
+ if(!confirm("Deseja excluir esta foto?"))return;
+ const {error}=await db.from("fotos_estabelecimentos_nightlife").delete().eq("id",f.id);
+ if(error){alert("Não foi possível excluir: "+error.message);return}
+ await db.storage.from(BUCKET).remove([f.caminho]);await carregarFotos(idAtual());
+}
+el("formFoto").addEventListener("submit",async e=>{
+ e.preventDefault();const id=idAtual(),file=el("arquivoFoto").files[0];if(!id||!file)return;
+ if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>5*1024*1024){mensagem("msgFoto","Escolha uma imagem JPG, PNG ou WEBP de até 5 MB.");return}
+ el("enviarFoto").disabled=true;mensagem("msgFoto","Enviando foto...");
+ const ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg",path=id+"/"+crypto.randomUUID()+"."+ext;
+ const up=await db.storage.from(BUCKET).upload(path,file,{contentType:file.type,upsert:false});
+ if(up.error){mensagem("msgFoto","Falha ao enviar: "+up.error.message);el("enviarFoto").disabled=false;return}
+ const {error}=await db.from("fotos_estabelecimentos_nightlife").insert({estabelecimento_id:id,caminho:path,legenda:el("legendaFoto").value.trim()||null});
+ if(error){await db.storage.from(BUCKET).remove([path]);mensagem("msgFoto","Foto enviada, mas não foi possível registrar: "+error.message)}
+ else{mensagem("msgFoto","Foto publicada! Ela já pode ser exibida aos clientes.");el("formFoto").reset();await carregarFotos(id)}
+ el("enviarFoto").disabled=false;
+});
+async function carregarEventos(id){
+ const area=el("listaEventos");area.replaceChildren();
+ const {data,error}=await db.from("eventos").select("id,nome,descricao,data_evento,horario").eq("estabelecimento_id",id).order("data_evento",{ascending:true});
+ if(error){area.textContent="Não foi possível carregar eventos: "+error.message;return}
+ if(!data?.length){area.textContent="Nenhum evento cadastrado neste estabelecimento.";return}
+ data.forEach(ev=>{const row=document.createElement("div");row.className="linha";row.append(texto("strong",ev.nome),texto("p",(ev.data_evento?new Date(ev.data_evento+"T12:00:00").toLocaleDateString("pt-BR"):"")+" • "+(ev.horario||"")),texto("p",ev.descricao||""));const b=texto("button","Excluir evento");b.type="button";b.addEventListener("click",async()=>{if(!confirm("Excluir este evento?"))return;const r=await db.from("eventos").delete().eq("id",ev.id);if(r.error)alert(r.error.message);else await carregarEventos(id)});row.append(b);area.append(row)});
+}
+el("formEvento").addEventListener("submit",async e=>{
+ e.preventDefault();const id=idAtual();if(!id){mensagem("msgEvento","Selecione um estabelecimento.");return}
+ const nome=el("nomeEvento").value.trim(),data_evento=el("dataEvento").value,horario=el("horaEvento").value;
+ if(data_evento<dataHoje()){mensagem("msgEvento","Escolha uma data de hoje em diante.");return}
+ el("salvarEvento").disabled=true;mensagem("msgEvento","Publicando evento...");
+ const {error}=await db.from("eventos").insert({estabelecimento_id:id,nome,descricao:el("descricaoEvento").value.trim(),data_evento,horario});
+ mensagem("msgEvento",error?"Não foi possível publicar: "+error.message:"Evento publicado com sucesso!");
+ if(!error){el("formEvento").reset();await carregarEventos(id)}
+ el("salvarEvento").disabled=false;
+});
+async function carregarPromocoes(id){
+ const area=el("listaPromocoes");area.replaceChildren();
+ const {data,error}=await db.from("promocoes_estabelecimentos_nightlife").select("id,titulo,descricao,preco,inicio,fim,ativo").eq("estabelecimento_id",id).order("criado_em",{ascending:false});
+ if(error){area.textContent="Não foi possível carregar promoções: "+error.message;return}
+ if(!data?.length){area.textContent="Nenhuma promoção cadastrada.";return}
+ data.forEach(p=>{const row=document.createElement("div");row.className="linha";row.append(texto("strong",p.titulo),texto("p",(p.preco||"Sem preço informado")+" • "+new Date(p.inicio+"T12:00:00").toLocaleDateString("pt-BR")+" até "+new Date(p.fim+"T12:00:00").toLocaleDateString("pt-BR")),texto("p",p.descricao||""),texto("p",p.ativo?"Ativa":"Pausada"));const b=texto("button",p.ativo?"Pausar promoção":"Ativar promoção");b.type="button";b.addEventListener("click",async()=>{const r=await db.from("promocoes_estabelecimentos_nightlife").update({ativo:!p.ativo}).eq("id",p.id);if(r.error)alert(r.error.message);else await carregarPromocoes(id)});const del=texto("button","Excluir promoção");del.type="button";del.className="secondary";del.addEventListener("click",async()=>{if(!confirm("Excluir esta promoção?"))return;const r=await db.from("promocoes_estabelecimentos_nightlife").delete().eq("id",p.id);if(r.error)alert(r.error.message);else await carregarPromocoes(id)});row.append(b,del);area.append(row)});
+}
+el("formPromocao").addEventListener("submit",async e=>{
+ e.preventDefault();const id=idAtual(),inicio=el("inicioPromocao").value,fim=el("fimPromocao").value;if(!id){mensagem("msgPromocao","Selecione um estabelecimento.");return}if(!inicio||!fim||fim<inicio){mensagem("msgPromocao","A data final deve ser igual ou posterior à data inicial.");return}
+ el("salvarPromocao").disabled=true;mensagem("msgPromocao","Publicando promoção...");
+ const {error}=await db.from("promocoes_estabelecimentos_nightlife").insert({estabelecimento_id:id,titulo:el("tituloPromocao").value.trim(),descricao:el("descricaoPromocao").value.trim(),preco:el("precoPromocao").value.trim()||null,inicio,fim});
+ mensagem("msgPromocao",error?"Não foi possível publicar: "+error.message:"Promoção publicada com sucesso!");
+ if(!error){el("formPromocao").reset();el("inicioPromocao").value=dataHoje();el("fimPromocao").value=dataHoje();await carregarPromocoes(id)}
+ el("salvarPromocao").disabled=false;
+});
 async function carregarPix(){
- const area=el("pix"),msg=el("pixMsg");
- const {data,error}=await db.rpc("nightlife_obter_chave_pix_proprietario");
- if(error){area.textContent="Chave Pix indisponível no momento.";msg.textContent="A configuração de acesso à chave Pix precisa ser ativada pelo Administrador Supremo no Supabase. "+error.message;return}
+ const area=el("pix"),msg=el("pixMsg");const {data,error}=await db.rpc("nightlife_obter_chave_pix_proprietario");
+ if(error){area.textContent="Chave Pix indisponível no momento.";msg.textContent="A configuração de acesso à chave Pix precisa estar ativa no Supabase. "+error.message;return}
  area.textContent=data||"A chave Pix ainda não foi cadastrada pelo Administrador Supremo.";
 }
+el("inicioPromocao").value=dataHoje();el("fimPromocao").value=dataHoje();
 el("sair").addEventListener("click",async()=>{await db.auth.signOut();location.replace("login.html")});
 iniciar();
 </script></body></html>

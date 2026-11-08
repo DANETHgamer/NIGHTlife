@@ -36,7 +36,7 @@ BEGIN
   UPDATE public.estabelecimentos
   SET usuario_id = auth.uid()
   WHERE usuario_id IS NULL
-    AND position(lower('E-mail: ' || v_email) in lower(coalesce(descricao,''))) > 0;
+    AND position(lower('E-mail: ' || v_email || ' |') in lower(coalesce(descricao,''))) > 0;
 
   GET DIAGNOSTICS v_total = ROW_COUNT;
   RETURN v_total;

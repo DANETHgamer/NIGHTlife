@@ -13,7 +13,7 @@
 <div id="status" class="panel">Verificando sua conta...</div>
 <div id="conteudo">
 <h1>Área do Proprietário</h1><p class="muted" id="ola">Bem-vindo ao seu espaço no NIGHTlife.</p>
-<section class="panel"><h2>Meus estabelecimentos</h2><p class="muted">Você só pode administrar estabelecimentos vinculados à sua conta.</p><select id="estabelecimento" class="seletor"><option value="">Carregando seus estabelecimentos...</option></select><div id="dadosEstabelecimento" class="muted"></div></section>
+<section class="panel"><h2>Meus estabelecimentos</h2><p class="muted">Você só pode administrar estabelecimentos vinculados à sua conta.</p><select id="estabelecimento" class="seletor"><option value="">Carregando seus estabelecimentos...</option></select><div id="dadosEstabelecimento" class="muted"></div><button id="abrirEdicaoEstabelecimento" type="button" class="secondary" style="margin-top:12px">✏️ Editar informações</button><form id="formEditarEstabelecimento" style="display:none;margin-top:14px"><h3>Editar informações do estabelecimento</h3><input id="editarNome" maxlength="120" placeholder="Nome do estabelecimento" required><input id="editarTipo" maxlength="100" placeholder="Categoria / tipo"><input id="editarEndereco" maxlength="250" placeholder="Endereço"><input id="editarTelefone" maxlength="40" placeholder="Telefone / WhatsApp"><button id="salvarEdicaoEstabelecimento" type="submit">Salvar alterações</button> <button id="cancelarEdicaoEstabelecimento" type="button" class="secondary">Cancelar</button><p id="msgEdicaoEstabelecimento" class="msg" aria-live="polite"></p></form></section>
 
 <section class="panel" id="painelVisitas"><h2>👥 Clientes enviados pelo NIGHTlife</h2><p class="muted">O cliente gera um código na página do seu estabelecimento. Quando ele chegar, digite o código abaixo para confirmar a visita. Cada código só pode ser confirmado uma vez.</p><div class="aviso" style="margin:12px 0">Visitas confirmadas: <strong id="totalVisitas">Carregando...</strong></div><form id="formConfirmarVisita"><label class="muted" for="codigoVisita">Código apresentado pelo cliente</label><div class="form-grid"><input id="codigoVisita" type="text" maxlength="11" placeholder="Ex.: NL-A1B2C3D4" autocomplete="off" required><button id="confirmarVisita" type="submit">Confirmar visita</button></div></form><p id="msgVisita" class="msg" aria-live="polite"></p><h3>Últimas visitas confirmadas</h3><div id="historicoVisitas" class="muted">Carregando histórico...</div></section>
 
@@ -84,6 +84,22 @@ async function iniciar(){
  await carregarConteudos();await carregarPix();
  el("status").style.display="none";
 }
+el("abrirEdicaoEstabelecimento").addEventListener("click",()=>{
+ const item=estabelecimentos.find(x=>x.id===idAtual());if(!item)return;
+ el("editarNome").value=item.nome||"";el("editarTipo").value=item.tipo||"";el("editarEndereco").value=item.endereco||"";el("editarTelefone").value=item.telefone||"";
+ el("msgEdicaoEstabelecimento").textContent="";el("formEditarEstabelecimento").style.display="block";
+});
+el("cancelarEdicaoEstabelecimento").addEventListener("click",()=>{el("formEditarEstabelecimento").style.display="none";});
+el("formEditarEstabelecimento").addEventListener("submit",async e=>{
+ e.preventDefault();const id=idAtual();if(!id||!usuario)return;
+ const botao=el("salvarEdicaoEstabelecimento");botao.disabled=true;mensagem("msgEdicaoEstabelecimento","Salvando alterações...");
+ const alteracoes={nome:el("editarNome").value.trim(),tipo:el("editarTipo").value.trim()||null,endereco:el("editarEndereco").value.trim()||null,telefone:el("editarTelefone").value.trim()||null};
+ const resultado=await comPrazo(db.from("estabelecimentos").update(alteracoes).eq("id",id).eq("usuario_id",usuario.id).select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").single(),"salvar as informações");
+ if(resultado.error){mensagem("msgEdicaoEstabelecimento","Não foi possível salvar: "+resultado.error.message);botao.disabled=false;return}
+ const indice=estabelecimentos.findIndex(x=>x.id===id);if(indice>=0)estabelecimentos[indice]={...estabelecimentos[indice],...resultado.data};
+ mensagem("msgEdicaoEstabelecimento","Informações atualizadas com sucesso!");
+ await carregarConteudos();botao.disabled=false;
+});
 async function carregarVisitas(id){
  const total=el("totalVisitas"),historico=el("historicoVisitas");
  total.textContent="Carregando...";historico.textContent="Carregando histórico...";

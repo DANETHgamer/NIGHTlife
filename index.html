@@ -263,7 +263,7 @@ main {
     cursor: wait;
 }
 
-.codigo-resgate {
+.grade-fotos-publicas{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin:14px 0}.grade-fotos-publicas img{width:100%;height:115px;object-fit:cover;border-radius:8px;border:1px solid #444}.codigo-resgate {
     margin-top: 10px !important;
     padding: 10px;
     border: 1px dashed #ff526b;
@@ -533,6 +533,8 @@ async function verificarLinkAdministrador(){const {data:s}=await supabaseClient.
 let estabelecimentosVisiveis = [];
 let avaliacoesPorEstabelecimento = {};
 let ofertasPorEstabelecimento = {};
+let fotosPorEstabelecimento = {};
+let promocoesPorEstabelecimento = {};
 
 /* IDENTIFICADOR DO NAVEGADOR */
 
@@ -670,6 +672,7 @@ async function carregarEstabelecimentos() {
 
     await carregarAvaliacoes(ids);
     await carregarOfertas(ids);
+    await carregarConteudoPublicado(ids);
 
     estabelecimentosVisiveis.forEach(item => {
 
@@ -693,6 +696,37 @@ async function carregarEstabelecimentos() {
             (item.horario_funcionamento || "Não informado");
 
         card.append(titulo, endereco, telefone, horario);
+
+        const fotosPublicadas = fotosPorEstabelecimento[item.id] || [];
+        if (fotosPublicadas.length) {
+            const galeria = document.createElement("div");
+            galeria.className = "grade-fotos-publicas";
+            fotosPublicadas.forEach(foto => {
+                const img = document.createElement("img");
+                img.src = supabaseClient.storage.from("nightlife-estabelecimentos").getPublicUrl(foto.caminho).data.publicUrl;
+                img.alt = foto.legenda || ("Foto de " + (item.nome || "estabelecimento"));
+                img.loading = "lazy";
+                img.title = foto.legenda || "";
+                galeria.appendChild(img);
+            });
+            card.appendChild(galeria);
+        }
+
+        (promocoesPorEstabelecimento[item.id] || []).forEach(promocao => {
+            const caixa = document.createElement("div");
+            caixa.className = "oferta";
+            const tituloPromocao = document.createElement("h4");
+            tituloPromocao.textContent = "🔥 " + promocao.titulo;
+            const descricaoPromocao = document.createElement("p");
+            descricaoPromocao.textContent = promocao.descricao || "Consulte as condições no estabelecimento.";
+            const precoPromocao = document.createElement("p");
+            precoPromocao.textContent = promocao.preco ? "Oferta: " + promocao.preco : "Promoção por tempo limitado.";
+            const validadePromocao = document.createElement("p");
+            validadePromocao.textContent = "Válida até " + new Date(promocao.fim + "T12:00:00").toLocaleDateString("pt-BR");
+            caixa.append(tituloPromocao, descricaoPromocao, precoPromocao, validadePromocao);
+            card.appendChild(caixa);
+        });
+
         const areaVisita=document.createElement("div");
         areaVisita.className="oferta";
         const tituloVisita=document.createElement("h4");
@@ -783,6 +817,33 @@ async function carregarEstabelecimentos() {
 
         lista.appendChild(card);
     });
+}
+
+async function carregarConteudoPublicado(ids) {
+    fotosPorEstabelecimento = {};
+    promocoesPorEstabelecimento = {};
+    ids.forEach(id => { fotosPorEstabelecimento[id] = []; promocoesPorEstabelecimento[id] = []; });
+
+    const hoje = new Date().toISOString().slice(0,10);
+    const [fotos, promocoes] = await Promise.all([
+        supabaseClient.from("fotos_estabelecimentos_nightlife")
+            .select("id,estabelecimento_id,caminho,legenda")
+            .in("estabelecimento_id", ids)
+            .order("criado_em", { ascending: false }),
+        supabaseClient.from("promocoes_estabelecimentos_nightlife")
+            .select("id,estabelecimento_id,titulo,descricao,preco,inicio,fim")
+            .eq("ativo", true)
+            .lte("inicio", hoje)
+            .gte("fim", hoje)
+            .in("estabelecimento_id", ids)
+            .order("criado_em", { ascending: false })
+    ]);
+
+    if (fotos.error) console.error("Erro ao carregar fotos públicas:", fotos.error.message);
+    else (fotos.data || []).forEach(f => { if (fotosPorEstabelecimento[f.estabelecimento_id]) fotosPorEstabelecimento[f.estabelecimento_id].push(f); });
+
+    if (promocoes.error) console.error("Erro ao carregar promoções públicas:", promocoes.error.message);
+    else (promocoes.data || []).forEach(p => { if (promocoesPorEstabelecimento[p.estabelecimento_id]) promocoesPorEstabelecimento[p.estabelecimento_id].push(p); });
 }
 
 async function carregarOfertas(ids) {

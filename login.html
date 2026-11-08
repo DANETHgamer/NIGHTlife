@@ -3,96 +3,91 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NIGHTlife - Login</title>
+<meta name="theme-color" content="#080808">
+<title>NIGHTlife | Entrar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Oswald:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Oswald:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 50% 0%,#351018,#080808 62%);color:#eee;font-family:Arial,sans-serif}
-.container{width:100%;max-width:430px;padding:30px;background:linear-gradient(145deg,#1c1c1c,#101010);border:1px solid #444;border-top:3px solid #ff1738;border-radius:15px;box-shadow:0 15px 45px #000}
-.logo{text-align:center;font:900 clamp(30px,8vw,42px) Orbitron,sans-serif;letter-spacing:-2px;color:#e5e5e5;text-shadow:0 0 12px #ffffff22}
-.logo span{font:normal 1em Pacifico,cursive;color:#ff1738}
-.slogan{text-align:center;margin:12px 0 28px;font:16px Oswald,sans-serif;letter-spacing:4px;text-transform:uppercase;color:#ddd}
-.slogan span{color:#ff1738}
-h2{text-align:center;font:600 24px Oswald,sans-serif;color:#e5e5e5;text-transform:uppercase}
-input,button{width:100%;padding:14px;margin-top:15px;border-radius:8px;font-size:16px}
-input{border:1px solid #555;background:#090909;color:#fff}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(ellipse at 50% 0%,#351018 0,#080808 62%);color:#eee;font-family:Arial,sans-serif}
+body:before{content:"NIGHTlife";position:fixed;inset:0;display:grid;place-items:center;font:900 clamp(55px,13vw,150px) Orbitron,sans-serif;color:#ffffff08;transform:rotate(-22deg);pointer-events:none}
+.painel{position:relative;width:min(100%,440px);padding:30px;background:linear-gradient(145deg,#1c1c1c,#101010);border:1px solid #444;border-top:3px solid #ff1738;border-radius:16px;box-shadow:0 18px 55px #000b}
+.logo{text-align:center;font:900 clamp(30px,8vw,42px) Orbitron,sans-serif;letter-spacing:-2px;color:#e5e5e5}.logo span{font:normal 1em Pacifico,cursive;color:#ff1738}
+.slogan{text-align:center;margin:10px 0 25px;font:16px Oswald,sans-serif;letter-spacing:4px;text-transform:uppercase;color:#ddd}
+h1{text-align:center;font:600 24px Oswald,sans-serif;text-transform:uppercase;margin:0 0 18px}
+label{display:block;margin:14px 0 6px;color:#ccc;font:600 14px Oswald,sans-serif;letter-spacing:.5px}
+input{width:100%;padding:14px;border:1px solid #555;border-radius:8px;background:#090909;color:#fff;font-size:16px}
 input:focus{outline:none;border-color:#ff1738;box-shadow:0 0 10px #ff173833}
-button{border:1px solid #ff526b;background:linear-gradient(135deg,#ff1738,#a80020);color:#fff;font-weight:bold;cursor:pointer}
+button{width:100%;padding:14px;margin-top:18px;border:1px solid #ff526b;border-radius:8px;background:linear-gradient(135deg,#ff1738,#a80020);color:#fff;font-size:16px;font-weight:bold;cursor:pointer}
 button:disabled{opacity:.6;cursor:wait}
-#mensagem{text-align:center;overflow-wrap:anywhere;color:#ffb7c1;line-height:1.5}
-.voltar{display:block;text-align:center;margin-top:18px;color:#bbb;text-decoration:none}
-.voltar:hover{color:#ff526b}
-.rodape{text-align:center;color:#777;font-size:11px;letter-spacing:2px;margin-top:25px}
+#mensagem{min-height:42px;text-align:center;overflow-wrap:anywhere;color:#ffb7c1;line-height:1.5}
+.voltar{display:block;text-align:center;margin-top:12px;color:#bbb;text-decoration:none}.voltar:hover{color:#ff526b}
+.rodape{text-align:center;color:#777;font-size:10px;letter-spacing:2px;margin-top:22px}
 </style>
 </head>
 <body>
-
-<div class="container">
-  <h1>NIGHTlife</h1>
-  <h2>Entrar na sua conta</h2>
-
-  <form id="formLogin">
-    <input id="email" type="email" placeholder="Seu e-mail" required>
-    <input id="senha" type="password" placeholder="Sua senha" required>
+<main class="painel">
+  <div class="logo">NIGHT<span>life</span></div>
+  <div class="slogan">A noite começa aqui</div>
+  <h1>Entrar na sua conta</h1>
+  <form id="formLogin" autocomplete="on">
+    <label for="email">E-mail</label>
+    <input id="email" name="email" type="email" autocomplete="username" placeholder="Seu e-mail" required>
+    <label for="senha">Senha</label>
+    <input id="senha" name="password" type="password" autocomplete="current-password" placeholder="Sua senha" required>
     <button id="botao" type="submit">Entrar</button>
   </form>
-
-  <p id="mensagem"></p>
-</div>
-
+  <p id="mensagem" role="status" aria-live="polite"></p>
+  <a class="voltar" href="index.html">Voltar para o NIGHTlife</a>
+  <div class="rodape">SUA CIDADE. SUA NOITE. SEU ROLÊ.</div>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://crmfxxsrhdncvaaxezvz.supabase.co";
-const SUPABASE_KEY = "sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
-
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-
-document.getElementById("formLogin").addEventListener("submit", async (event) => {
+"use strict";
+const SUPABASE_URL="https://crmfxxsrhdncvaaxezvz.supabase.co";
+const SUPABASE_KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const form=document.getElementById("formLogin");
+const botao=document.getElementById("botao");
+const mensagem=document.getElementById("mensagem");
+function destinoDoNivel(nivel){
+  if(nivel==="supremo") return "painel.html";
+  if(nivel==="regional") return "central-controle.html";
+  if(nivel==="proprietario") return "painel-proprietario.html";
+  throw new Error("Sua conta não possui um nível de acesso reconhecido.");
+}
+async function encaminharConta(){
+  mensagem.textContent="Identificando seu nível de acesso...";
+  const {data,error}=await db.rpc("nightlife_obter_nivel_acesso");
+  if(error) throw new Error("Não foi possível validar suas permissões. A configuração de acesso do NIGHTlife precisa ser ativada no Supabase. "+error.message);
+  const destino=destinoDoNivel(data?.nivel);
+  mensagem.textContent="Acesso confirmado. Abrindo sua área...";
+  window.location.replace(destino);
+}
+form.addEventListener("submit",async(event)=>{
   event.preventDefault();
-
-  const mensagem = document.getElementById("mensagem");
-  const botao = document.getElementById("botao");
-
-  botao.disabled = true;
-  mensagem.textContent = "Verificando acesso...";
-
-  const email = document.getElementById("email").value.trim();
-  const senha = document.getElementById("senha").value;
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: senha
-  });
-
-  if (error) {
-    mensagem.textContent = "Erro ao entrar: " + error.message;
-    botao.disabled = false;
+  botao.disabled=true;
+  mensagem.textContent="Validando seus dados...";
+  const email=document.getElementById("email").value.trim();
+  const senha=document.getElementById("senha").value;
+  const {error}=await db.auth.signInWithPassword({email,password:senha});
+  if(error){
+    mensagem.textContent="Não foi possível entrar: "+error.message;
+    botao.disabled=false;
     return;
   }
-
-  mensagem.textContent = "Login realizado! Verificando seu nível de acesso...";
-
-  const { data: acesso, error: acessoError } = await supabaseClient.rpc("nightlife_obter_nivel_acesso");
-  if (acessoError) {
-    mensagem.textContent = "Não foi possível verificar as permissões. Execute a migration de administração regional no Supabase. " + acessoError.message;
-    botao.disabled = false;
-    return;
-  }
-
-  if (acesso?.nivel === "supremo") {
-    window.location.href = "painel.html";
-  } else if (acesso?.nivel === "regional") {
-    window.location.href = "central-controle.html";
-  } else {
-    window.location.href = "painel-proprietario.html";
-  }
+  try{await encaminharConta();}
+  catch(error){mensagem.textContent=error.message;botao.disabled=false;}
 });
+(async()=>{
+  const {data,error}=await db.auth.getSession();
+  if(!error&&data.session){
+    botao.disabled=true;
+    try{await encaminharConta();}
+    catch(e){mensagem.textContent=e.message;botao.disabled=false;}
+  }
+})();
 </script>
-
 </body>
 </html>

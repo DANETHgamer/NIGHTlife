@@ -263,6 +263,8 @@ button:disabled {
       <p id="mensagemAdminRegional"></p>
       <div id="listaAdminsRegionais"></div>
     </div>
+
+    <div class="card">
       <h3>Mensalidades</h3>
       <div class="numero">R$ 25,00</div>
       <p>Valor mensal por estabelecimento.</p>
@@ -270,9 +272,11 @@ button:disabled {
     </div>
 
     <div class="card">
-      <h3>Chave Pix do administrador</h3>
-      <p>Área reservada. Ainda não cadastramos sua chave Pix.</p>
-      <p>Sua chave não será exibida aos visitantes ou proprietários.</p>
+      <h3>Chave Pix do Administrador Supremo</h3>
+      <p>Esta chave será exibida somente aos proprietários para pagamento das mensalidades. Somente você pode alterá-la.</p>
+      <input id="chavePixAdmin" type="text" maxlength="200" placeholder="Digite sua chave Pix">
+      <button id="salvarPixAdmin" type="button">Salvar chave Pix</button>
+      <p id="mensagemPixAdmin" role="status"></p>
     </div>
 
   </div>
@@ -336,6 +340,7 @@ async function iniciarPainel() {
 
   await carregarEstabelecimentos();
   await carregarAdminsRegionais();
+  await carregarPixAdministrador();
 }
 
 async function carregarEstabelecimentos() {
@@ -451,11 +456,46 @@ Só continue se o dinheiro já estiver na sua conta.`
     div.appendChild(vencimento);
     div.appendChild(botaoAtivar);
     div.appendChild(botao);
+    if (item.ativo === false) {
+      const excluir = document.createElement("button");
+      excluir.type = "button";
+      excluir.textContent = "Excluir conta comercial";
+      excluir.style.background = "#681020";
+      excluir.addEventListener("click", async () => {
+        if (!confirm("Excluir definitivamente a conta comercial " + (item.nome || "") + "? Esta ação não poderá ser desfeita.")) return;
+        excluir.disabled = true;
+        const { error } = await supabaseClient.rpc("nightlife_excluir_estabelecimento_desativado", { p_estabelecimento_id: item.id });
+        if (error) { alert("Não foi possível excluir: " + error.message); excluir.disabled = false; return; }
+        alert("Conta comercial excluída.");
+        await carregarEstabelecimentos();
+      });
+      div.appendChild(excluir);
+    }
 
     lista.appendChild(div);
   });
 }
 
+
+async function carregarPixAdministrador() {
+  const campo = document.getElementById("chavePixAdmin");
+  const mensagem = document.getElementById("mensagemPixAdmin");
+  const { data, error } = await supabaseClient.from("configuracoes_plataforma").select("chave_pix").eq("id", 1).maybeSingle();
+  if (error) { mensagem.textContent = "Não foi possível carregar a chave Pix: " + error.message; return; }
+  campo.value = data?.chave_pix || "";
+}
+
+document.getElementById("salvarPixAdmin")?.addEventListener("click", async () => {
+  const campo = document.getElementById("chavePixAdmin");
+  const mensagem = document.getElementById("mensagemPixAdmin");
+  const chave = campo.value.trim();
+  if (!chave) { mensagem.textContent = "Digite uma chave Pix antes de salvar."; return; }
+  const botao = document.getElementById("salvarPixAdmin");
+  botao.disabled = true;
+  const { error } = await supabaseClient.rpc("nightlife_salvar_chave_pix_admin", { p_chave_pix: chave });
+  botao.disabled = false;
+  mensagem.textContent = error ? "Erro ao salvar: " + error.message : "Chave Pix atualizada com sucesso.";
+});
 
 async function carregarAdminsRegionais() {
   const area = document.getElementById("listaAdminsRegionais");
@@ -468,6 +508,23 @@ async function carregarAdminsRegionais() {
     const linha = document.createElement("div"); linha.className = "item";
     const info = document.createElement("p");
     info.textContent = admin.email + " | " + admin.estado + " | " + ((admin.cidades || []).length ? admin.cidades.join(", ") : "Todo o estado") + " | " + (admin.ativo ? "Ativo" : "Suspenso");
+    const acoes = document.createElement("div");
+    const editar = document.createElement("button");
+    editar.textContent = "Editar região";
+    editar.style.background = "#444";
+    editar.addEventListener("click", async () => {
+      const estado = prompt("Sigla do novo estado (ex.: SC):", admin.estado);
+      if (estado === null) return;
+      const cidadesTexto = prompt("Cidades separadas por vírgula. Deixe vazio para todo o estado:", (admin.cidades || []).join(", "));
+      if (cidadesTexto === null) return;
+      editar.disabled = true;
+      const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", {
+        p_email: admin.email, p_estado: estado.trim().toUpperCase(),
+        p_cidades: cidadesTexto.split(",").map(c => c.trim()).filter(Boolean)
+      });
+      if (error) { alert(error.message); editar.disabled = false; return; }
+      await carregarAdminsRegionais();
+    });
     const botao = document.createElement("button"); botao.textContent = admin.ativo ? "Suspender acesso" : "Reativar acesso"; botao.style.background = "#444";
     botao.addEventListener("click", async () => {
       if (!confirm((admin.ativo ? "Suspender" : "Reativar") + " o acesso de " + admin.email + "?")) return;
@@ -476,7 +533,18 @@ async function carregarAdminsRegionais() {
       if (resultado.error) { alert(resultado.error.message); botao.disabled = false; return; }
       await carregarAdminsRegionais();
     });
-    linha.append(info, botao); area.appendChild(linha);
+    const excluir = document.createElement("button");
+    excluir.textContent = "Excluir vínculo";
+    excluir.style.background = "#681020";
+    excluir.addEventListener("click", async () => {
+      if (!confirm("Remover " + admin.email + " da administração regional? A pessoa perderá imediatamente o acesso regional. A conta de login não será apagada do sistema de autenticação.")) return;
+      excluir.disabled = true;
+      const { error } = await supabaseClient.rpc("nightlife_remover_admin_regional", { p_usuario_id: admin.usuario_id });
+      if (error) { alert(error.message); excluir.disabled = false; return; }
+      await carregarAdminsRegionais();
+    });
+    acoes.append(editar, botao, excluir);
+    linha.append(info, acoes); area.appendChild(linha);
   });
 }
 document.getElementById("formAdminRegional")?.addEventListener("submit", async event => {

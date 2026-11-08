@@ -46,7 +46,7 @@ async function iniciar(){
  if(acesso.error){el("verificando").textContent="A estrutura regional ainda precisa ser ativada no Supabase. "+acesso.error.message;return;}
  const nivel=acesso.data||{};
  if(nivel.nivel==="supremo"){location.replace("painel.html");return;}
- if(nivel.nivel!=="regional"){location.replace("painel-proprietario.html");return;}
+ if(nivel.nivel!=="regional"){location.replace("login.html");return;}
  el("usuario").textContent="Conectado como: "+(user.email||"conta autenticada");
  if(nivel.nivel==="supremo"){el("tituloAcesso").textContent="Visão nacional — Administrador Supremo";el("escopo").textContent="Visão geral de todos os estados e cidades."; }
  else {el("tituloAcesso").textContent="Administrador regional — "+nivel.estado;el("escopo").textContent="Estado autorizado: "+nivel.estado+(nivel.cidades&&nivel.cidades.length?" | Cidades: "+nivel.cidades.join(", "):" | Todas as cidades do estado");}

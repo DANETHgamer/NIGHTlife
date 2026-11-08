@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<title>NIGHTlife | Central de Controle</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Oswald:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#251016,#080808 58%);color:#eee;font-family:Arial,sans-serif}
+header{padding:22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#100b0d;border-bottom:2px solid #ff1738}
+.logo{font:800 26px Orbitron,sans-serif;letter-spacing:1px}.logo span{font:normal 26px Pacifico,cursive;color:#ff1738}
+button,a.btn{border:1px solid #ff526b;border-radius:8px;padding:11px 15px;background:linear-gradient(135deg,#ff1738,#a80020);color:white;font-weight:bold;cursor:pointer;text-decoration:none}
+main{max-width:1100px;margin:auto;padding:24px 16px 50px}h1,h2,h3{font-family:Oswald,sans-serif}h1{font-size:30px;margin:0 0 6px}h2{border-left:4px solid #ff1738;padding-left:12px}.sub{color:#aaa;margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:20px 0}.card{background:#151515;border:1px solid #383838;border-top:2px solid #ff1738;border-radius:12px;padding:18px;margin:16px 0;box-shadow:0 8px 24px #0008}.numero{font:800 32px Orbitron,sans-serif;color:#ff526b}.muted{color:#aaa}.linha{padding:14px 0;border-bottom:1px solid #333;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}.linha:last-child{border-bottom:0}.linha strong{display:block;font-size:17px}.tag{color:#ff7184;font-weight:bold}.aviso{padding:13px;border-left:3px solid #ff1738;background:#211216;border-radius:7px;line-height:1.5}#conteudo{display:none}#mensagem{overflow-wrap:anywhere;color:#ffb7c1}.acoes{display:flex;gap:8px;flex-wrap:wrap}.sec{background:#292929;border-color:#555}.rodape{text-align:center;color:#777;font-size:12px;padding:25px}
+</style>
+</head>
+<body>
+<header><div class="logo">NIGHT<span>life</span></div><div class="acoes"><a class="btn sec" href="index.html">Área do cliente</a><button id="sair" class="sec">Sair</button></div></header>
+<main>
+<div id="verificando" class="card">Verificando suas permissões...</div>
+<div id="conteudo">
+<h1>Central de Controle</h1>
+<p class="sub" id="escopo">Operação regional do NIGHTlife</p>
+<div class="card"><h3 id="tituloAcesso">Acesso autorizado</h3><p id="usuario"></p><p class="aviso">Você só pode administrar estabelecimentos dentro da região autorizada. A área do Administrador Supremo é separada e não aparece para administradores regionais.</p></div>
+<div class="grid">
+<div class="card"><div class="muted">Estabelecimentos na região</div><div class="numero" id="total">—</div></div>
+<div class="card"><div class="muted">Ativos</div><div class="numero" id="ativos">—</div></div>
+<div class="card"><div class="muted">Desativados</div><div class="numero" id="inativos">—</div></div>
+</div>
+<div class="card"><h2>Estabelecimentos da região</h2><p id="mensagem">Carregando...</p><div id="lista"></div></div>
+</div>
+</main>
+<div class="rodape">NIGHTlife © 2026 — SUA CIDADE. SUA NOITE. SEU ROLÊ.</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://crmfxxsrhdncvaaxezvz.supabase.co";
+const SUPABASE_KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const el=id=>document.getElementById(id);
+async function iniciar(){
+ const {data,error}=await db.auth.getSession();
+ if(error||!data.session){location.href="login.html";return;}
+ const user=data.session.user;
+ const acesso=await db.rpc("nightlife_obter_nivel_acesso");
+ if(acesso.error){el("verificando").textContent="A estrutura regional ainda precisa ser ativada no Supabase. "+acesso.error.message;return;}
+ const nivel=acesso.data||{};
+ if(!["supremo","regional"].includes(nivel.nivel)){location.href="painel-proprietario.html";return;}
+ el("usuario").textContent="Conectado como: "+(user.email||"conta autenticada");
+ if(nivel.nivel==="supremo"){el("tituloAcesso").textContent="Visão nacional — Administrador Supremo";el("escopo").textContent="Visão geral de todos os estados e cidades."; }
+ else {el("tituloAcesso").textContent="Administrador regional — "+nivel.estado;el("escopo").textContent="Estado autorizado: "+nivel.estado+(nivel.cidades&&nivel.cidades.length?" | Cidades: "+nivel.cidades.join(", "):" | Todas as cidades do estado");}
+ el("conteudo").style.display="block";el("verificando").style.display="none";
+ await carregar();
+}
+async function carregar(){
+ const resumo=await db.rpc("nightlife_resumo_central_controle");
+ if(resumo.error){el("mensagem").textContent=resumo.error.message;return;}
+ const r=Array.isArray(resumo.data)?resumo.data[0]:resumo.data;
+ el("total").textContent=r?.total_estabelecimentos??0;el("ativos").textContent=r?.estabelecimentos_ativos??0;el("inativos").textContent=r?.estabelecimentos_inativos??0;
+ const resposta=await db.rpc("nightlife_listar_estabelecimentos_controle");
+ if(resposta.error){el("mensagem").textContent=resposta.error.message;return;}
+ const lista=el("lista");lista.replaceChildren();
+ const itens=resposta.data||[];
+ el("mensagem").textContent=itens.length?itens.length+" estabelecimento(s) dentro da sua permissão.":"Nenhum estabelecimento encontrado nesta região.";
+ itens.forEach(item=>{
+  const linha=document.createElement("div");linha.className="linha";
+  const info=document.createElement("div");const nome=document.createElement("strong");nome.textContent=item.nome||"Sem nome";const detalhe=document.createElement("span");detalhe.className="muted";detalhe.textContent=[item.cidade,item.estado,item.endereco,item.telefone].filter(Boolean).join(" | ");const plano=document.createElement("div");plano.className="tag";plano.textContent="Plano: "+(item.status_plano||"não definido");info.append(nome,detalhe,document.createElement("br"),plano);
+  const acoes=document.createElement("div");acoes.className="acoes";const status=document.createElement("span");status.className="muted";status.textContent=item.ativo===false?"Desativado":"Ativo";const btn=document.createElement("button");btn.className="sec";btn.textContent=item.ativo===false?"Reativar":"Desativar";btn.addEventListener("click",async()=>{if(!confirm((item.ativo===false?"Reativar ":"Desativar ")+item.nome+"?"))return;btn.disabled=true;const r=await db.rpc("nightlife_alterar_status_estabelecimento_regional",{p_estabelecimento_id:item.id,p_ativo:item.ativo===false});if(r.error){alert(r.error.message);btn.disabled=false;return;}await carregar();});acoes.append(status,btn);linha.append(info,acoes);lista.append(linha);
+ });
+}
+el("sair").addEventListener("click",async()=>{await db.auth.signOut();location.href="login.html";});
+iniciar();
+</script>
+</body></html>

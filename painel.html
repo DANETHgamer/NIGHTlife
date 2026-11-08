@@ -214,7 +214,7 @@ button:disabled {
 <header>
   <div class="logo">NIGHT<span>life</span></div>
   <button id="sair">Sair da conta</button>
-</header><nav class="menu-flutuante" aria-label="Menu principal"><button class="menu-abrir" id="menuAbrir" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button><div class="menu-links" id="menuLinks"><a href="central-cliente.html">Central do cliente</a><a href="index.html">Área do cliente</a><a href="login.html">Área do proprietário</a><a href="painel.html" id="linkAdminMenu" class="menu-admin" hidden>Administrador</a></div></nav>
+</header><nav class="menu-flutuante" aria-label="Menu principal"><button class="menu-abrir" id="menuAbrir" type="button" aria-label="Abrir menu" aria-expanded="false">☰</button><div class="menu-links" id="menuLinks"><a href="central-controle.html">Central de Controle</a><a href="central-cliente.html">Central do cliente</a><a href="index.html">Área do cliente</a><a href="login.html">Área do proprietário</a><a href="painel.html" id="linkAdminMenu" class="menu-admin" hidden>Administrador</a></div></nav>
 
 <main>
 
@@ -224,13 +224,13 @@ button:disabled {
 
   <div id="conteudo">
 
-    <h2>Centro de controle</h2>
+    <h2>Administrador Supremo</h2>
 
     <div class="card">
       <h3>Administrador / Proprietário do NIGHTlife</h3>
       <p id="usuario"></p>
       <p>Permissão: ADMINISTRADOR</p>
-      <p>Área exclusiva de administração da plataforma.</p>
+      <p>Área exclusiva do proprietário da plataforma. Administradores regionais não têm acesso a esta página.</p>
     </div>
 
     <div class="card">
@@ -246,7 +246,21 @@ button:disabled {
     </div>
 
     <div class="card">
-      <h3>Mensalidades</h3>
+      <div class="card">
+      <h3>Administradores regionais</h3>
+      <p>Cadastre uma conta já existente e limite o acesso por estado. Se informar cidades, o administrador ficará restrito a elas; se deixar em branco, poderá administrar todo o estado.</p>
+      <form id="formAdminRegional">
+        <input id="emailAdminRegional" type="email" placeholder="E-mail da conta já cadastrada" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
+        <select id="estadoAdminRegional" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
+          <option value="">Selecione o estado</option>
+          <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option><option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option><option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
+        </select>
+        <input id="cidadesAdminRegional" type="text" placeholder="Cidades separadas por vírgula (opcional)" style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
+        <button type="submit">Salvar administrador regional</button>
+      </form>
+      <p id="mensagemAdminRegional"></p>
+      <div id="listaAdminsRegionais"></div>
+    </div>\n      <h3>Mensalidades</h3>
       <div class="numero">R$ 25,00</div>
       <p>Valor mensal por estabelecimento.</p>
       <p>30 dias gratuitos e 2 dias de tolerância.</p>
@@ -315,7 +329,7 @@ async function iniciarPainel() {
   verificando.style.display = "none";
   document.getElementById("conteudo").style.display = "block";
 
-  await carregarEstabelecimentos();
+  await carregarEstabelecimentos();\n  await carregarAdminsRegionais();
 }
 
 async function carregarEstabelecimentos() {
@@ -434,7 +448,43 @@ async function carregarEstabelecimentos() {
   });
 }
 
-document.getElementById("sair").addEventListener("click", async () => {
+
+async function carregarAdminsRegionais() {
+  const area = document.getElementById("listaAdminsRegionais");
+  if (!area) return;
+  area.replaceChildren();
+  const { data, error } = await supabaseClient.rpc("nightlife_listar_admins_regionais");
+  if (error) { area.textContent = "Não foi possível carregar administradores: " + error.message; return; }
+  if (!data || !data.length) { area.textContent = "Nenhum administrador regional cadastrado."; return; }
+  data.forEach(admin => {
+    const linha = document.createElement("div"); linha.className = "item";
+    const info = document.createElement("p");
+    info.textContent = admin.email + " | " + admin.estado + " | " + ((admin.cidades || []).length ? admin.cidades.join(", ") : "Todo o estado") + " | " + (admin.ativo ? "Ativo" : "Suspenso");
+    const botao = document.createElement("button"); botao.textContent = admin.ativo ? "Suspender acesso" : "Reativar acesso"; botao.style.background = "#444";
+    botao.addEventListener("click", async () => {
+      if (!confirm((admin.ativo ? "Suspender" : "Reativar") + " o acesso de " + admin.email + "?")) return;
+      botao.disabled = true;
+      const resultado = await supabaseClient.rpc("nightlife_definir_status_admin_regional", { p_usuario_id: admin.usuario_id, p_ativo: !admin.ativo });
+      if (resultado.error) { alert(resultado.error.message); botao.disabled = false; return; }
+      await carregarAdminsRegionais();
+    });
+    linha.append(info, botao); area.appendChild(linha);
+  });
+}
+document.getElementById("formAdminRegional")?.addEventListener("submit", async event => {
+  event.preventDefault();
+  const mensagem = document.getElementById("mensagemAdminRegional");
+  const botao = event.currentTarget.querySelector("button[type=submit]");
+  const email = document.getElementById("emailAdminRegional").value.trim();
+  const estado = document.getElementById("estadoAdminRegional").value;
+  const cidades = document.getElementById("cidadesAdminRegional").value.split(",").map(c => c.trim()).filter(Boolean);
+  botao.disabled = true; mensagem.textContent = "Salvando permissões regionais...";
+  const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", { p_email: email, p_estado: estado, p_cidades: cidades });
+  if (error) mensagem.textContent = "Não foi possível salvar: " + error.message;
+  else { mensagem.textContent = "Administrador regional configurado com sucesso."; event.currentTarget.reset(); await carregarAdminsRegionais(); }
+  botao.disabled = false;
+});
+\ndocument.getElementById("sair").addEventListener("click", async () => {
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
 });

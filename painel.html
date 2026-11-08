@@ -230,10 +230,10 @@ button:disabled {
     <h2>Administrador Supremo</h2>
 
     <div class="card">
-      <h3>Administrador / Proprietário do NIGHTlife</h3>
+      <h3>Conta do Administrador Supremo</h3>
       <p id="usuario"></p>
-      <p>Permissão: ADMINISTRADOR</p>
-      <p>Área exclusiva do proprietário da plataforma. Administradores regionais não têm acesso a esta página.</p>
+      <p>Permissão: ADMINISTRADOR SUPREMO</p>
+      <p>Área exclusiva do Administrador Supremo. Proprietários de estabelecimentos e administradores regionais não têm acesso a esta página.</p>
     </div>
 
     <div class="card">
@@ -312,16 +312,18 @@ async function iniciarPainel() {
 
   const usuario = sessaoData.session.user;
 
-  const { data: perfil, error: perfilError } =
-    await supabaseClient
-      .from("perfis")
-      .select("tipo")
-      .eq("id", usuario.id)
-      .single();
+  const { data: acesso, error: acessoError } =
+    await supabaseClient.rpc("nightlife_obter_nivel_acesso");
 
-  if (perfilError || !perfil || perfil.tipo !== "admin") {
+  if (acessoError) {
     verificando.textContent =
-      "Acesso negado. Esta área é exclusiva do administrador.";
+      "Não foi possível confirmar seu nível de acesso: " + acessoError.message;
+    return;
+  }
+
+  if (acesso?.nivel !== "supremo") {
+    verificando.textContent =
+      "Acesso negado. Esta área é exclusiva do Administrador Supremo.";
     return;
   }
 

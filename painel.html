@@ -257,7 +257,7 @@ button:disabled {
           <option value="">Selecione o estado</option>
           <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option><option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option><option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
         </select>
-        <input id="cidadesAdminRegional" type="text" placeholder="Cidades separadas por vírgula (opcional)" style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
+        <label for="cidadesAdminRegional">Cidades que esse administrador poderá gerenciar (selecione uma ou mais)</label><select id="cidadesAdminRegional" multiple size="7" disabled style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px"><option value="">Selecione primeiro um estado</option></select><small id="ajudaCidadesRegional" style="display:block;color:#aaa">Escolha um estado para carregar a lista oficial de municípios.</small>
         <button type="submit">Salvar administrador regional</button>
       </form>
       <p id="mensagemAdminRegional"></p>
@@ -497,6 +497,37 @@ document.getElementById("salvarPixAdmin")?.addEventListener("click", async () =>
   mensagem.textContent = error ? "Erro ao salvar: " + error.message : "Chave Pix atualizada com sucesso.";
 });
 
+const estadoRegional = document.getElementById("estadoAdminRegional");
+const cidadesRegional = document.getElementById("cidadesAdminRegional");
+const ajudaCidadesRegional = document.getElementById("ajudaCidadesRegional");
+
+async function carregarCidadesDoEstado(uf, selecionadas = []) {
+  cidadesRegional.replaceChildren();
+  cidadesRegional.disabled = true;
+  if (!uf) {
+    cidadesRegional.add(new Option("Selecione primeiro um estado", ""));
+    ajudaCidadesRegional.textContent = "Escolha um estado para carregar a lista oficial de municípios.";
+    return;
+  }
+  ajudaCidadesRegional.textContent = "Carregando municípios...";
+  try {
+    const resposta = await fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados/" + encodeURIComponent(uf) + "/municipios?orderBy=nome");
+    if (!resposta.ok) throw new Error("Não foi possível consultar a lista do IBGE.");
+    const municipios = await resposta.json();
+    municipios.forEach(municipio => {
+      const opcao = new Option(municipio.nome, municipio.nome);
+      opcao.selected = selecionadas.includes(municipio.nome);
+      cidadesRegional.add(opcao);
+    });
+    cidadesRegional.disabled = false;
+    ajudaCidadesRegional.textContent = municipios.length + " municípios carregados. Use Ctrl (ou Command no Mac) para selecionar várias cidades. Se não selecionar nenhuma, o administrador terá acesso a todo o estado.";
+  } catch (erro) {
+    cidadesRegional.add(new Option("Erro ao carregar. Tente novamente.", ""));
+    ajudaCidadesRegional.textContent = erro.message;
+  }
+}
+estadoRegional?.addEventListener("change", () => carregarCidadesDoEstado(estadoRegional.value));
+
 async function carregarAdminsRegionais() {
   const area = document.getElementById("listaAdminsRegionais");
   if (!area) return;
@@ -553,11 +584,11 @@ document.getElementById("formAdminRegional")?.addEventListener("submit", async e
   const botao = event.currentTarget.querySelector("button[type=submit]");
   const email = document.getElementById("emailAdminRegional").value.trim();
   const estado = document.getElementById("estadoAdminRegional").value;
-  const cidades = document.getElementById("cidadesAdminRegional").value.split(",").map(c => c.trim()).filter(Boolean);
+  const cidades = Array.from(document.getElementById("cidadesAdminRegional").selectedOptions).map(opcao => opcao.value).filter(Boolean);
   botao.disabled = true; mensagem.textContent = "Salvando permissões regionais...";
   const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional", { p_email: email, p_estado: estado, p_cidades: cidades });
   if (error) mensagem.textContent = "Não foi possível salvar: " + error.message;
-  else { mensagem.textContent = "Administrador regional configurado com sucesso."; event.currentTarget.reset(); await carregarAdminsRegionais(); }
+  else { mensagem.textContent = "Administrador regional configurado com sucesso."; event.currentTarget.reset(); await carregarCidadesDoEstado(""); await carregarAdminsRegionais(); }
   botao.disabled = false;
 });
 

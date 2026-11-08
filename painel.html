@@ -262,7 +262,8 @@ button:disabled {
       </form>
       <p id="mensagemAdminRegional"></p>
       <div id="listaAdminsRegionais"></div>
-    </div>\n      <h3>Mensalidades</h3>
+    </div>
+      <h3>Mensalidades</h3>
       <div class="numero">R$ 25,00</div>
       <p>Valor mensal por estabelecimento.</p>
       <p>30 dias gratuitos e 2 dias de tolerância.</p>
@@ -331,7 +332,8 @@ async function iniciarPainel() {
   verificando.style.display = "none";
   document.getElementById("conteudo").style.display = "block";
 
-  await carregarEstabelecimentos();\n  await carregarAdminsRegionais();
+  await carregarEstabelecimentos();
+  await carregarAdminsRegionais();
 }
 
 async function carregarEstabelecimentos() {
@@ -400,9 +402,13 @@ async function carregarEstabelecimentos() {
 
     botao.addEventListener("click", async () => {
       const primeiraConfirmacao = confirm(
-        "ATENÇÃO!\n\nVocê recebeu realmente R$ 25,00 via Pix de " +
+        "ATENÇÃO!
+
+Você recebeu realmente R$ 25,00 via Pix de " +
         (item.nome || "este estabelecimento") +
-        "?\n\nSó continue se o dinheiro já estiver na sua conta."
+        "?
+
+Só continue se o dinheiro já estiver na sua conta."
       );
 
       if (!primeiraConfirmacao) return;
@@ -486,7 +492,8 @@ document.getElementById("formAdminRegional")?.addEventListener("submit", async e
   else { mensagem.textContent = "Administrador regional configurado com sucesso."; event.currentTarget.reset(); await carregarAdminsRegionais(); }
   botao.disabled = false;
 });
-\ndocument.getElementById("sair").addEventListener("click", async () => {
+
+document.getElementById("sair").addEventListener("click", async () => {
   await supabaseClient.auth.signOut();
   window.location.href = "login.html";
 });

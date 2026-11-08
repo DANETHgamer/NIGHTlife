@@ -24,10 +24,21 @@
 <section class="panel"><h2>Mensalidade e pagamento</h2><p class="muted">Use a chave Pix oficial da plataforma para realizar o pagamento. A chave é definida pelo Administrador Supremo e atualizada automaticamente para todos os proprietários.</p><div id="pix" class="pix">Carregando chave Pix...</div><p class="muted" id="pixMsg"></p></section>
 </div></main>
 <div class="rodape">NIGHTlife — SUA CIDADE. SUA NOITE. SEU ROLÊ.</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 "use strict";
 const el=id=>document.getElementById(id);
+function carregarBibliotecaSupabase(){
+ return new Promise((resolve,reject)=>{
+  if(window.supabase?.createClient){resolve();return;}
+  const script=document.createElement("script");
+  script.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+  script.onload=()=>window.supabase?.createClient?resolve():reject(new Error("A biblioteca do Supabase carregou, mas não ficou disponível."));
+  script.onerror=()=>reject(new Error("Não foi possível baixar a biblioteca do Supabase. Verifique sua internet ou bloqueios do navegador."));
+  document.head.appendChild(script);
+  setTimeout(()=>reject(new Error("A conexão com a biblioteca do Supabase demorou demais. Tente novamente.")),12000);
+ });
+}
+carregarBibliotecaSupabase().then(()=>{
 const URL="https://crmfxxsrhdncvaaxezvz.supabase.co",KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q",BUCKET="nightlife-estabelecimentos";
 if (!window.supabase || typeof window.supabase.createClient !== "function") {
  el("status").textContent = "A conexão do NIGHTlife não carregou. Verifique sua internet e atualize a página."; 
@@ -137,5 +148,10 @@ iniciar().catch(erro=>{
  console.error("Erro ao iniciar o painel do proprietário:",erro);
  el("status").style.display="block";
  el("status").textContent="Não foi possível abrir seu painel. "+(erro?.message||"Erro inesperado.")+" Atualize a página. Se continuar, envie esta mensagem ao suporte.";
+});
+
+}).catch(erro=>{
+ el("status").style.display="block";
+ el("status").textContent="Falha ao iniciar o NIGHTlife: "+(erro?.message||"Erro inesperado.");
 });
 </script></body></html>

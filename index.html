@@ -665,6 +665,25 @@ async function carregarEstabelecimentos() {
             (item.horario_funcionamento || "Não informado");
 
         card.append(titulo, endereco, telefone, horario);
+        const areaVisita=document.createElement("div");
+        areaVisita.className="oferta";
+        const tituloVisita=document.createElement("h4");
+        tituloVisita.textContent="📍 Veio pelo NIGHTlife?";
+        const textoVisita=document.createElement("p");
+        textoVisita.textContent="Gere seu código gratuito e mostre no estabelecimento. O responsável confirma sua visita.";
+        const botaoVisita=document.createElement("button");
+        botaoVisita.type="button";botaoVisita.className="botao-oferta";botaoVisita.textContent="Gerar código de visita";
+        const codigoVisita=document.createElement("p");codigoVisita.className="codigo-resgate";codigoVisita.hidden=true;
+        botaoVisita.addEventListener("click",async()=>{
+          botaoVisita.disabled=true;botaoVisita.textContent="Gerando código...";
+          const {data:codigoGerado,error:erroCodigo}=await supabaseClient.rpc("gerar_visita_nightlife",{p_estabelecimento_id:item.id,p_visitante_id:obterIdentificadorMetricas()});
+          if(erroCodigo){console.error(erroCodigo);alert("Não foi possível gerar o código. Tente novamente.");botaoVisita.disabled=false;botaoVisita.textContent="Gerar código de visita";return;}
+          codigoVisita.textContent="SEU CÓDIGO: "+codigoGerado;codigoVisita.hidden=false;
+          textoVisita.textContent="Mostre este código ao atendente para confirmar que você veio pelo NIGHTlife.";
+          botaoVisita.textContent="Código gerado";
+        });
+        areaVisita.append(tituloVisita,textoVisita,botaoVisita,codigoVisita);
+        card.appendChild(areaVisita);
         const acoesLocal=document.createElement("div");acoesLocal.className="acoes";
         let tel=(item.telefone||"").replace(/\D/g,"");if(tel&&tel.length<=11)tel="55"+tel;
         if(tel){const w=document.createElement("a");w.className="botao";w.href="https://wa.me/"+tel;w.target="_blank";w.rel="noopener";w.textContent="Chamar no WhatsApp";w.addEventListener("click",()=>registrarInteracao(item.id,"whatsapp"));acoesLocal.appendChild(w);}

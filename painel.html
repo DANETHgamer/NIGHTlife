@@ -253,7 +253,10 @@ button:disabled {
       <p>Cadastre o administrador e escolha o estado. Ele terá acesso a <strong>todas as cidades cadastradas no NIGHTlife nesse estado</strong>, inclusive as que forem adicionadas futuramente.</p>
       <form id="formAdminRegional">
         <input id="nomeAdminRegional" type="text" maxlength="120" placeholder="Nome completo do administrador" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
-        <input id="emailAdminRegional" type="email" placeholder="E-mail da conta já cadastrada" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
+        <input id="cpfAdminRegional" type="text" inputmode="numeric" maxlength="14" placeholder="CPF do administrador" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
+        <input id="telefoneAdminRegional" type="tel" maxlength="20" placeholder="Telefone com DDD" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
+        <input id="emailAdminRegional" type="email" placeholder="E-mail para acesso" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
+        <input id="senhaAdminRegional" type="password" minlength="8" autocomplete="new-password" placeholder="Senha inicial (mínimo 8 caracteres)" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
         <select id="estadoAdminRegional" required style="width:100%;padding:12px;margin:7px 0;background:#101010;color:white;border:1px solid #444;border-radius:8px">
           <option value="">Selecione o estado</option>
           <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option><option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option><option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
@@ -294,6 +297,7 @@ button:disabled {
 <script>
 const SUPABASE_URL = "https://crmfxxsrhdncvaaxezvz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q";
+const EDGE_CRIAR_ADMIN_URL = SUPABASE_URL + "/functions/v1/criar-admin-regional";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
@@ -652,15 +656,28 @@ document.getElementById("formAdminRegional")?.addEventListener("submit", async e
   const mensagem = document.getElementById("mensagemAdminRegional");
   const botao = event.currentTarget.querySelector("button[type=submit]");
   const nome = document.getElementById("nomeAdminRegional").value.trim();
+  const cpf = document.getElementById("cpfAdminRegional").value.replace(/\D/g, "");
+  const telefone = document.getElementById("telefoneAdminRegional").value.trim();
   const email = document.getElementById("emailAdminRegional").value.trim();
+  const senha = document.getElementById("senhaAdminRegional").value;
   const estado = document.getElementById("estadoAdminRegional").value;
-  botao.disabled = true; mensagem.textContent = "Salvando nome e atribuindo todas as cidades do estado...";
-  const { error } = await supabaseClient.rpc("nightlife_criar_admin_regional_com_nome", {
-    p_email: email, p_estado: estado, p_cidades: [], p_nome_completo: nome
-  });
-  if (error) mensagem.textContent = "Não foi possível salvar: " + error.message;
-  else { mensagem.textContent = "Administrador regional configurado com sucesso."; event.currentTarget.reset(); await carregarCidadesDoEstado(""); await carregarAdminsRegionais(); }
-  botao.disabled = false;
+  if (cpf.length !== 11) { mensagem.textContent = "Informe um CPF com 11 números."; return; }
+  if (senha.length < 8) { mensagem.textContent = "A senha inicial precisa ter pelo menos 8 caracteres."; return; }
+  const { data: sessao } = await supabaseClient.auth.getSession();
+  if (!sessao.session) { mensagem.textContent = "Sua sessão expirou. Entre novamente."; return; }
+  botao.disabled = true; mensagem.textContent = "Criando conta e configurando o acesso regional...";
+  try {
+    const resposta = await fetch(EDGE_CRIAR_ADMIN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + sessao.session.access_token, "apikey": SUPABASE_KEY },
+      body: JSON.stringify({ nome_completo: nome, cpf, telefone, email, senha, estado })
+    });
+    const resultado = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) throw new Error(resultado.error || "Falha ao criar administrador.");
+    mensagem.textContent = "Administrador criado! Ele já pode entrar com o e-mail e a senha inicial.";
+    event.currentTarget.reset(); await carregarCidadesDoEstado(""); await carregarAdminsRegionais();
+  } catch (erro) { mensagem.textContent = "Não foi possível criar: " + erro.message; }
+  finally { botao.disabled = false; }
 });
 
 document.getElementById("sair").addEventListener("click", async () => {

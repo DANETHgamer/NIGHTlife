@@ -418,8 +418,25 @@ async function iniciarPainel() {
   }
 
   usuarioAtual = data.session.user;
-  const { data: perfilMenu } = await supabaseClient.from("perfis").select("tipo").eq("id", usuarioAtual.id).maybeSingle();
-  if (perfilMenu?.tipo === "admin") document.getElementById("linkAdminMenu").hidden = false;
+
+  const { data: nivelAcesso, error: erroAcesso } =
+    await supabaseClient.rpc("nightlife_obter_nivel_acesso");
+
+  if (erroAcesso) {
+    document.getElementById("verificando").textContent =
+      "Não foi possível verificar seu perfil: " + erroAcesso.message;
+    return;
+  }
+
+  if (nivelAcesso?.nivel === "supremo") {
+    window.location.replace("painel.html");
+    return;
+  }
+
+  if (nivelAcesso?.nivel === "regional") {
+    window.location.replace("central-controle.html");
+    return;
+  }
 
   document.getElementById("email").textContent =
     "Conectado como: " + usuarioAtual.email;

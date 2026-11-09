@@ -394,6 +394,11 @@ formulario.addEventListener("submit", async function(event) {
         tipo: document.getElementById("tipo").value || null
     };
 
+    const { data: sessaoAtual } = await supabaseClient.auth.getSession();
+    if (sessaoAtual?.session?.user?.id) {
+        dados.usuario_id = sessaoAtual.session.user.id;
+    }
+
     const { error } = await supabaseClient
         .from("estabelecimentos")
         .insert([dados]);

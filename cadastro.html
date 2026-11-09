@@ -406,7 +406,7 @@ formulario.addEventListener("submit", async function(event) {
     if (error) {
         mensagem.textContent = "Erro ao cadastrar: " + error.message;
     } else {
-        mensagem.textContent = "Cadastro enviado com sucesso!";
+        mensagem.textContent = "Cadastro enviado. Ele ficará pendente até análise e ativação pela equipe.";
         formulario.reset();
     }
 

@@ -629,25 +629,12 @@ async function carregarEstabelecimentos() {
     const termoFiltro = (document.getElementById("pesquisaEstabelecimento")?.value || "").trim();
 
     let consultaEstabelecimentos = supabaseClient
-        .from("estabelecimentos")
-        .select("id,nome,endereco,telefone,horario_funcionamento,ativo,cidade,estado")
-        .eq("ativo", true)
-        .in("status_plano", ["teste", "ativo", "tolerancia"]);
+        .from("estabelecimentos_publicos")
+        .select("id,nome,endereco,telefone,horario_funcionamento,cidade,estado,ativo,criado_em");
     if (estadoFiltro) consultaEstabelecimentos = consultaEstabelecimentos.eq("estado", estadoFiltro);
     if (cidadeFiltro) consultaEstabelecimentos = consultaEstabelecimentos.eq("cidade", cidadeFiltro);
     if (termoFiltro) consultaEstabelecimentos = consultaEstabelecimentos.ilike("nome", "%" + termoFiltro + "%");
     consultaEstabelecimentos = await consultaEstabelecimentos.order("criado_em", { ascending: false });
-
-    if (consultaEstabelecimentos.error && /ativo/i.test(consultaEstabelecimentos.error.message || "")) {
-        let consultaAlternativa = supabaseClient
-            .from("estabelecimentos")
-            .select("id,nome,endereco,telefone,horario_funcionamento,cidade,estado")
-            .in("status_plano", ["teste", "ativo", "tolerancia"]);
-        if (estadoFiltro) consultaAlternativa = consultaAlternativa.eq("estado", estadoFiltro);
-        if (cidadeFiltro) consultaAlternativa = consultaAlternativa.eq("cidade", cidadeFiltro);
-        if (termoFiltro) consultaAlternativa = consultaAlternativa.ilike("nome", "%" + termoFiltro + "%");
-        consultaEstabelecimentos = await consultaAlternativa.order("criado_em", { ascending: false });
-    }
     const { data, error } = consultaEstabelecimentos;
 
     if (error) {

@@ -2,8 +2,9 @@
 
 ## Controles implementados
 
-- A view pública estabelecimentos_publicos expõe somente campos do catálogo e usa security_invoker=true.
-- Acesso anônimo à tabela-base não inclui descricao nem outros campos privados; RLS restringe linhas publicadas.
+- A view pública estabelecimentos_publicos usa security_invoker=true e expõe apenas campos do catálogo.
+- O papel anon recebe leitura somente das colunas públicas; RLS limita a registros ativos, visíveis e publicados.
+- Cadastros informativos têm status separado e cobrança zero, guardam a fonte consultada e são identificados como não parceiros; a vitrine omite visitas e avaliações e a RPC também bloqueia códigos de visita.
 - Inserções de estabelecimento ficam pendentes e inativas. O proprietário não recebe permissão de alterar plano, cobrança, ativação ou visibilidade via grants de coluna.
 - RPCs de gestão e proprietário foram restringidas a authenticated; cinco RPCs públicas de negócio continuam acessíveis por anon para fluxos de visitante.
 - A chave usada no front-end é publicável. Nenhuma chave privilegiada deve ser colocada no repositório.

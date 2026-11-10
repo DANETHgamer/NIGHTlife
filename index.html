@@ -275,6 +275,8 @@ main {
     overflow-wrap: anywhere;
 }
 
+.aviso-cadastro-informativo{margin:12px 0;padding:12px;border:1px solid #765b25;border-radius:8px;background:#211b0d;color:#f0d995;font-size:13px;line-height:1.5}.fonte-cadastro-informativo{display:inline-block;margin:4px 0 12px;color:#ffc928;font-size:13px}
+
 .mensagem {
     color: var(--cinza);
     margin: 15px 0;
@@ -679,7 +681,7 @@ async function carregarEstabelecimentos() {
 
     let consultaEstabelecimentos = supabaseClient
         .from("estabelecimentos_publicos")
-        .select("id,nome,endereco,telefone,horario_funcionamento,cidade,estado,ativo,criado_em,latitude,longitude");
+        .select("id,nome,endereco,telefone,horario_funcionamento,cidade,estado,ativo,criado_em,latitude,longitude,cadastro_informativo,fonte_url,fonte_consultada_em");
     if (estadoFiltro) consultaEstabelecimentos = consultaEstabelecimentos.eq("estado", estadoFiltro);
     if (cidadeFiltro) consultaEstabelecimentos = consultaEstabelecimentos.eq("cidade", cidadeFiltro);
     if (termoFiltro) consultaEstabelecimentos = consultaEstabelecimentos.ilike("nome", "%" + termoFiltro + "%");
@@ -734,6 +736,27 @@ async function carregarEstabelecimentos() {
 
         card.append(titulo, endereco, telefone, horario);
 
+        if (item.cadastro_informativo) {
+            const avisoInformativo = document.createElement("p");
+            avisoInformativo.className = "aviso-cadastro-informativo";
+            avisoInformativo.textContent =
+                "Cadastro informativo, sem parceria oficial com o NIGHTlife. " +
+                "Horários podem mudar; confirme diretamente com o local.";
+
+            const fonteInformativa = document.createElement("a");
+            fonteInformativa.className = "fonte-cadastro-informativo";
+            fonteInformativa.href = item.fonte_url || "#";
+            fonteInformativa.target = "_blank";
+            fonteInformativa.rel = "noopener noreferrer";
+            fonteInformativa.textContent = "Consultar fonte pública";
+            if (!/^https:\/\//i.test(fonteInformativa.href)) {
+                fonteInformativa.removeAttribute("href");
+                fonteInformativa.removeAttribute("target");
+            }
+
+            card.append(avisoInformativo, fonteInformativa);
+        }
+
         const fotosPublicadas = fotosPorEstabelecimento[item.id] || [];
         if (fotosPublicadas.length) {
             const galeria = document.createElement("div");
@@ -764,6 +787,7 @@ async function carregarEstabelecimentos() {
             card.appendChild(caixa);
         });
 
+        if (!item.cadastro_informativo) {
         const areaVisita=document.createElement("div");
         areaVisita.className="oferta";
         const tituloVisita=document.createElement("h4");
@@ -783,12 +807,14 @@ async function carregarEstabelecimentos() {
         });
         areaVisita.append(tituloVisita,textoVisita,botaoVisita,codigoVisita);
         card.appendChild(areaVisita);
+        }
         const acoesLocal=document.createElement("div");acoesLocal.className="acoes";
         let tel=(item.telefone||"").replace(/\D/g,"");if(tel&&tel.length<=11)tel="55"+tel;
-        if(tel){const w=document.createElement("a");w.className="botao";w.href="https://wa.me/"+tel;w.target="_blank";w.rel="noopener";w.textContent="Chamar no WhatsApp";w.addEventListener("click",()=>registrarInteracao(item.id,"whatsapp"));acoesLocal.appendChild(w);}
-        if(item.endereco){const r=document.createElement("a");r.className="botao secundario";r.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(item.endereco);r.target="_blank";r.rel="noopener";r.textContent="Como chegar";r.addEventListener("click",()=>registrarInteracao(item.id,"rota"));acoesLocal.appendChild(r);}
-        if(acoesLocal.childElementCount)card.appendChild(acoesLocal);observarVisualizacaoEstabelecimento(card,item.id);
+        if(tel){const w=document.createElement("a");w.className="botao";w.href="https://wa.me/"+tel;w.target="_blank";w.rel="noopener";w.textContent="Chamar no WhatsApp";w.addEventListener("click",()=>{if(!item.cadastro_informativo)registrarInteracao(item.id,"whatsapp");});acoesLocal.appendChild(w);}
+        if(item.endereco){const r=document.createElement("a");r.className="botao secundario";r.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(item.endereco);r.target="_blank";r.rel="noopener";r.textContent="Como chegar";r.addEventListener("click",()=>{if(!item.cadastro_informativo)registrarInteracao(item.id,"rota");});acoesLocal.appendChild(r);}
+        if(acoesLocal.childElementCount)card.appendChild(acoesLocal);if(!item.cadastro_informativo)observarVisualizacaoEstabelecimento(card,item.id);
 
+        if (!item.cadastro_informativo) {
         (ofertasPorEstabelecimento[item.id] || []).forEach(oferta => {
             const caixaOferta = document.createElement("div");
             caixaOferta.className = "oferta";
@@ -849,8 +875,11 @@ async function carregarEstabelecimentos() {
             observarVisualizacaoOferta(caixaOferta, oferta.id);
         });
 
+        }
+        if (!item.cadastro_informativo) {
         const areaAvaliacoes = criarAreaAvaliacoes(item);
         card.appendChild(areaAvaliacoes);
+        }
 
         lista.appendChild(card);
     });

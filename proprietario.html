@@ -46,6 +46,7 @@ window.addEventListener("unhandledrejection",function(e){
 });
 </script>
 <script crossorigin="anonymous" src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js" onerror="document.getElementById('status').textContent='Falha ao carregar a biblioteca Supabase. O endereço externo não respondeu.';"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 "use strict";
 const el=id=>document.getElementById(id);
@@ -53,7 +54,6 @@ if (!window.supabase?.createClient) {
  el("status").textContent="Não foi possível carregar a conexão do NIGHTlife. Atualize a página ou tente outro navegador.";
  throw new Error("Biblioteca do Supabase indisponível.");
 }
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 const SUPABASE_URL="https://crmfxxsrhdncvaaxezvz.supabase.co",SUPABASE_KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q",BUCKET="nightlife-estabelecimentos";
 if (!window.supabase || typeof window.supabase.createClient !== "function") {
  el("status").textContent = "A conexão do NIGHTlife não carregou. Verifique sua internet e atualize a página."; 

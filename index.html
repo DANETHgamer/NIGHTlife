@@ -1197,7 +1197,7 @@ async function carregarEventos() {
 
     const { data, error } = await supabaseClient
         .from("eventos")
-        .select("id,nome,descricao,data_evento,horario,estabelecimento_id")
+        .select("id,nome,descricao,data_evento,horario,data_fim,horario_fim,estabelecimento_id")
         .in("estabelecimento_id", ids)
         .order("data_evento", { ascending: true });
 
@@ -1208,8 +1208,8 @@ async function carregarEventos() {
     }
 
     const agora=new Date();
-    const eventosFuturos=(data||[]).filter(item=>{if(!item.data_evento)return false;const hora=item.horario||"23:59";const inicio=new Date(item.data_evento+"T"+hora+":00");return !Number.isNaN(inicio.getTime())&&inicio>=agora;});
-    if(eventosFuturos.length===0){mensagem.textContent="Não há eventos futuros. Eventos encerrados deixam de aparecer automaticamente.";return;}
+    const eventosFuturos=(data||[]).filter(item=>{if(!item.data_fim||!item.horario_fim)return false;const termino=new Date(item.data_fim+"T"+String(item.horario_fim).slice(0,5)+":00-03:00");return !Number.isNaN(termino.getTime())&&termino>agora;});
+    if(eventosFuturos.length===0){mensagem.textContent="Não há eventos em andamento ou futuros no momento.";return;}
     mensagem.textContent=eventosFuturos.length+" evento(s) futuro(s) encontrado(s).";
     eventosFuturos.forEach(item => {
 
@@ -1241,12 +1241,16 @@ async function carregarEventos() {
         horario.textContent =
             "Horário: " + (item.horario || "Não informado");
 
+        const fimEvento = document.createElement("p");
+        fimEvento.textContent = "Até: " + (item.data_fim ? new Date(item.data_fim + "T12:00:00").toLocaleDateString("pt-BR") : "Não informado") + " às " + (item.horario_fim ? String(item.horario_fim).slice(0,5) : "Não informado");
+
         card.append(
             titulo,
             local,
             descricao,
             dataEvento,
-            horario
+            horario,
+            fimEvento
         );
 
         lista.appendChild(card);

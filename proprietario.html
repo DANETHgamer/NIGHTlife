@@ -27,7 +27,7 @@
 
 <section class="panel"><h2>📸 Fotos do ambiente</h2><p class="muted">Mostre aos clientes como é seu espaço: salão, mesas, decoração, bebidas e estrutura. JPG, PNG ou WEBP, até 5 MB por foto.</p><form id="formFoto"><input id="arquivoFoto" type="file" accept="image/jpeg,image/png,image/webp" required><input id="legendaFoto" type="text" maxlength="120" placeholder="Legenda da foto (opcional)"><button id="enviarFoto" type="submit">Publicar foto</button></form><p id="msgFoto" class="msg"></p><div id="listaFotos" class="grade"></div></section>
 
-<section class="panel"><h2>🎉 Criar evento ou festa</h2><p class="muted">Cadastre festas, shows, noites temáticas e outros eventos. Eles poderão aparecer na página pública do NIGHTlife.</p><form id="formEvento"><input id="nomeEvento" maxlength="100" placeholder="Nome do evento ou festa" required><textarea id="descricaoEvento" maxlength="1000" placeholder="Descrição, atrações e informações"></textarea><div class="form-grid"><input id="dataEvento" type="date" required><input id="horaEvento" type="time" required></div><button id="salvarEvento" type="submit">Publicar evento</button></form><p id="msgEvento" class="msg"></p><div id="listaEventos"></div></section>
+<section class="panel"><h2>🎉 Criar evento ou festa</h2><p class="muted">Cadastre festas, shows, noites temáticas e outros eventos. Eles poderão aparecer na página pública do NIGHTlife.</p><form id="formEvento"><input id="nomeEvento" maxlength="100" placeholder="Nome do evento ou festa" required><textarea id="descricaoEvento" maxlength="1000" placeholder="Descrição, atrações e informações"></textarea><div class="form-grid"><label class="muted">Data de início<input id="dataEvento" type="date" required></label><label class="muted">Horário de início<input id="horaEvento" type="time" required></label><label class="muted">Data de término<input id="dataFimEvento" type="date" required></label><label class="muted">Horário de término<input id="horaFimEvento" type="time" required></label></div><button id="salvarEvento" type="submit">Publicar evento</button> <button id="cancelarEdicaoEvento" type="button" class="secondary" hidden>Cancelar edição</button></form><p id="msgEvento" class="msg"></p><div id="listaEventos"></div></section>
 
 <section class="panel"><h2>🔥 Criar promoção</h2><p class="muted">Divulgue ofertas especiais com período de validade. Exemplo: happy hour, dose dupla ou desconto na entrada.</p><form id="formPromocao"><input id="tituloPromocao" maxlength="100" placeholder="Título da promoção" required><textarea id="descricaoPromocao" maxlength="700" placeholder="Descreva a oferta e as condições"></textarea><input id="precoPromocao" maxlength="60" placeholder="Preço ou benefício (opcional)"><div class="form-grid"><label class="muted">Início<input id="inicioPromocao" type="date" required></label><label class="muted">Fim<input id="fimPromocao" type="date" required></label></div><button id="salvarPromocao" type="submit">Publicar promoção</button></form><p id="msgPromocao" class="msg"></p><div id="listaPromocoes"></div></section>
 
@@ -190,22 +190,48 @@ el("formFoto").addEventListener("submit",async e=>{
  else{mensagem("msgFoto","Foto publicada! Ela já pode ser exibida aos clientes.");el("formFoto").reset();await carregarFotos(id)}
  el("enviarFoto").disabled=false;
 });
+let eventoEmEdicao=null;
+function cancelarEdicaoEvento(){
+ eventoEmEdicao=null;el("formEvento").reset();el("salvarEvento").textContent="Publicar evento";el("cancelarEdicaoEvento").hidden=true;
+}
+el("cancelarEdicaoEvento").addEventListener("click",cancelarEdicaoEvento);
 async function carregarEventos(id){
  const area=el("listaEventos");area.replaceChildren();
- const {data,error}=await db.from("eventos").select("id,nome,descricao,data_evento,horario").eq("estabelecimento_id",id).order("data_evento",{ascending:true});
+ const {data,error}=await db.from("eventos").select("id,nome,descricao,data_evento,horario,data_fim,horario_fim").eq("estabelecimento_id",id).order("data_evento",{ascending:true});
  if(error){area.textContent="Não foi possível carregar eventos: "+error.message;return}
  if(!data?.length){area.textContent="Nenhum evento cadastrado neste estabelecimento.";return}
- data.forEach(ev=>{const row=document.createElement("div");row.className="linha";row.append(texto("strong",ev.nome),texto("p",(ev.data_evento?new Date(ev.data_evento+"T12:00:00").toLocaleDateString("pt-BR"):"")+" • "+(ev.horario||"")),texto("p",ev.descricao||""));const b=texto("button","Excluir evento");b.type="button";b.addEventListener("click",async()=>{if(!confirm("Excluir este evento?"))return;const r=await db.from("eventos").delete().eq("id",ev.id);if(r.error)alert(r.error.message);else await carregarEventos(id)});row.append(b);area.append(row)});
+ data.forEach(ev=>{
+  const row=document.createElement("div");row.className="linha";
+  const inicioData=ev.data_evento?new Date(ev.data_evento+"T12:00:00").toLocaleDateString("pt-BR"):"Data não informada";
+  const fimData=ev.data_fim?new Date(ev.data_fim+"T12:00:00").toLocaleDateString("pt-BR"):"Término não informado";
+  row.append(texto("strong",ev.nome),texto("p","Início: "+inicioData+" às "+(ev.horario||"").slice(0,5)),texto("p","Término: "+fimData+" às "+(ev.horario_fim||"").slice(0,5)),texto("p",ev.descricao||""));
+  const editar=texto("button","Editar evento");editar.type="button";editar.className="secondary";
+  editar.addEventListener("click",()=>{
+   eventoEmEdicao=ev.id;el("nomeEvento").value=ev.nome||"";el("descricaoEvento").value=ev.descricao||"";
+   el("dataEvento").value=ev.data_evento||"";el("horaEvento").value=(ev.horario||"").slice(0,5);
+   el("dataFimEvento").value=ev.data_fim||"";el("horaFimEvento").value=(ev.horario_fim||"").slice(0,5);
+   el("salvarEvento").textContent="Salvar alterações";el("cancelarEdicaoEvento").hidden=false;
+   el("formEvento").scrollIntoView({behavior:"smooth",block:"center"});
+  });
+  const excluir=texto("button","Excluir evento");excluir.type="button";excluir.className="secondary";
+  excluir.addEventListener("click",async()=>{if(!confirm("Excluir este evento?"))return;const res=await db.from("eventos").delete().eq("id",ev.id).eq("estabelecimento_id",id);if(res.error)alert("Não foi possível excluir: "+res.error.message);else await carregarEventos(id)});
+  row.append(editar,excluir);area.append(row);
+ });
 }
 el("formEvento").addEventListener("submit",async e=>{
  e.preventDefault();const id=idAtual();if(!id){mensagem("msgEvento","Selecione um estabelecimento.");return}
- const nome=el("nomeEvento").value.trim(),data_evento=el("dataEvento").value,horario=el("horaEvento").value;
- if(data_evento<dataHoje()){mensagem("msgEvento","Escolha uma data de hoje em diante.");return}
- el("salvarEvento").disabled=true;mensagem("msgEvento","Publicando evento...");
- const {error}=await db.from("eventos").insert({estabelecimento_id:id,nome,descricao:el("descricaoEvento").value.trim(),data_evento,horario});
- mensagem("msgEvento",error?"Não foi possível publicar: "+error.message:"Evento publicado com sucesso!");
- if(!error){el("formEvento").reset();await carregarEventos(id)}
- el("salvarEvento").disabled=false;
+ const nome=el("nomeEvento").value.trim(),data_evento=el("dataEvento").value,horario=el("horaEvento").value,data_fim=el("dataFimEvento").value,horario_fim=el("horaFimEvento").value;
+ const inicio=new Date(data_evento+"T"+horario),fim=new Date(data_fim+"T"+horario_fim);
+ if(!data_evento||!horario||!data_fim||!horario_fim||Number.isNaN(inicio.getTime())||Number.isNaN(fim.getTime())||fim<=inicio){mensagem("msgEvento","Informe início e término válidos. O término precisa ser depois do início.");return}
+ if(!eventoEmEdicao&&inicio<new Date()){mensagem("msgEvento","Escolha um início a partir de agora.");return}
+ const dados={estabelecimento_id:id,nome,descricao:el("descricaoEvento").value.trim()||null,data_evento,horario,data_fim,horario_fim};
+ const botao=el("salvarEvento");botao.disabled=true;mensagem("msgEvento",eventoEmEdicao?"Salvando alterações...":"Publicando evento...");
+ const resultado=eventoEmEdicao
+  ? await db.from("eventos").update(dados).eq("id",eventoEmEdicao).eq("estabelecimento_id",id)
+  : await db.from("eventos").insert(dados);
+ mensagem("msgEvento",resultado.error?"Não foi possível salvar: "+resultado.error.message:(eventoEmEdicao?"Evento atualizado com sucesso!":"Evento publicado com sucesso!"));
+ if(!resultado.error){cancelarEdicaoEvento();await carregarEventos(id)}
+ botao.disabled=false;
 });
 async function carregarPromocoes(id){
  const area=el("listaPromocoes");area.replaceChildren();

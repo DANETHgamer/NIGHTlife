@@ -17,7 +17,7 @@ O repositório não tem workflow de CI/CD detectado e os commits consultados nã
 - Aplique em ambiente de desenvolvimento antes de produção quando houver ambiente disponível.
 - Registre a mesma migração no projeto e no repositório; confira advisors e grants após a aplicação.
 - Nunca use migração para contornar RLS ou registrar dados reais/sensíveis.
-- Os cinco arquivos com prefixo 20261109 registram as mudanças aplicadas durante a auditoria.
+- Os cinco arquivos com prefixo 20261109 e a migração 20261110031710 registram as mudanças aplicadas durante a auditoria.
 - O repositório já continha 12 arquivos SQL históricos, mas o histórico de migrações do projeto Supabase estava vazio no início desta revisão. Ainda falta reconciliar o baseline completo antes de usar todos os arquivos antigos para recriar um banco do zero.
 
 ## Publicação do site

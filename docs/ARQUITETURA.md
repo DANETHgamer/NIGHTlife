@@ -27,7 +27,7 @@ PostgreSQL pode crescer com o produto se houver paginação, índices nas chaves
 
 Pagamentos: o código observado usa Pix manual. Antes da automação, escolha um gateway e crie um fluxo backend com webhook assinado, idempotência e estados de cobrança. Não aceite preço, confirmação ou credenciais enviados pelo navegador.
 
-Mapas: não há mapa nem coordenadas normalizadas no modelo atual. Defina um provedor e uma política de privacidade antes de enviar endereço/localização a serviço de geocodificação. Prefira geocodificação no servidor e coordenadas normalizadas; restrinja as chaves públicas se o fornecedor exigir chave de cliente.
+Mapas: Leaflet 1.9.4 renderiza tiles OpenStreetMap na vitrine. Latitude e longitude opcionais são escolhidas manualmente no mapa durante o cadastro ou edição pelo proprietário e validadas por constraints no banco. Não há geocodificação: o endereço não é enviado ao provedor. Locais antigos não têm coordenadas e só aparecem como pinos após edição. A aplicação atribui OpenStreetMap no controle do mapa; mantenha a atribuição e respeite a política de uso de tiles. A API pública Nominatim não é usada.
 
 ## Limites conhecidos
 

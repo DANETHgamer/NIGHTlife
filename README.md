@@ -29,4 +29,4 @@ Consulte [docs/OPERACAO.md](docs/OPERACAO.md) antes de aplicar SQL. Migrações 
 
 ## Pagamentos e mapas
 
-O fluxo observado usa Pix manual e não tem gateway automatizado nem integração de mapa. Consulte a documentação de arquitetura antes de escolher fornecedores ou criar credenciais; as chaves privadas devem ficar no backend/Edge Function.
+O fluxo de Pix ainda é manual e não tem gateway automatizado. A vitrine agora inclui mapa Leaflet com tiles OpenStreetMap e pinos manuais; os locais antigos precisam receber coordenadas no painel do proprietário. Consulte a documentação de arquitetura antes de escolher o gateway; credenciais privadas ficam no backend/Edge Function.

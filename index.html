@@ -694,23 +694,12 @@ async function carregarEstabelecimentos() {
         return;
     }
 
-    estabelecimentosVisiveis = (data || []).filter(item => {
-        const lat = Number(item.latitude);
-        const lng = Number(item.longitude);
-        return item.latitude !== null &&
-            item.latitude !== undefined &&
-            item.longitude !== null &&
-            item.longitude !== undefined &&
-            Number.isFinite(lat) &&
-            Number.isFinite(lng) &&
-            lat >= -90 && lat <= 90 &&
-            lng >= -180 && lng <= 180;
-    });
+    estabelecimentosVisiveis = data || [];
     desenharMapaEstabelecimentos(estabelecimentosVisiveis);
 
     if (estabelecimentosVisiveis.length === 0) {
         mensagem.textContent =
-            "Nenhum estabelecimento com coordenadas cadastradas para localização no mapa.";
+            "Nenhum estabelecimento disponível no momento.";
         return;
     }
 

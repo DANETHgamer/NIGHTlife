@@ -112,7 +112,7 @@ async function iniciar(){
  const select=el("estabelecimento");select.replaceChildren();
  if(!estabelecimentos.length){select.append(texto("option","Nenhum estabelecimento vinculado"));el("dadosEstabelecimento").textContent="Ainda não encontramos estabelecimentos vinculados a esta conta.";el("status").style.display="none";return}
  estabelecimentos.forEach(item=>{const op=texto("option",item.nome||"Estabelecimento");op.value=item.id;select.append(op)});
- select.addEventListener("change",carregarConteudos);
+ select.addEventListener("change",()=>{cancelarEdicaoEvento();carregarConteudos()});
  await carregarConteudos();await carregarPix();
  el("status").style.display="none";
 }
@@ -225,12 +225,13 @@ el("formEvento").addEventListener("submit",async e=>{
  if(!data_evento||!horario||!data_fim||!horario_fim||Number.isNaN(inicio.getTime())||Number.isNaN(fim.getTime())||fim<=inicio){mensagem("msgEvento","Informe início e término válidos. O término precisa ser depois do início.");return}
  if(!eventoEmEdicao&&inicio<new Date()){mensagem("msgEvento","Escolha um início a partir de agora.");return}
  const dados={estabelecimento_id:id,nome,descricao:el("descricaoEvento").value.trim()||null,data_evento,horario,data_fim,horario_fim};
- const botao=el("salvarEvento");botao.disabled=true;mensagem("msgEvento",eventoEmEdicao?"Salvando alterações...":"Publicando evento...");
- const resultado=eventoEmEdicao
-  ? await db.from("eventos").update(dados).eq("id",eventoEmEdicao).eq("estabelecimento_id",id)
+ const editando=Boolean(eventoEmEdicao),botao=el("salvarEvento");botao.disabled=true;mensagem("msgEvento",editando?"Salvando alterações...":"Publicando evento...");
+ const resultado=editando
+  ? await db.from("eventos").update(dados).eq("id",eventoEmEdicao).eq("estabelecimento_id",id).select("id").maybeSingle()
   : await db.from("eventos").insert(dados);
- mensagem("msgEvento",resultado.error?"Não foi possível salvar: "+resultado.error.message:(eventoEmEdicao?"Evento atualizado com sucesso!":"Evento publicado com sucesso!"));
- if(!resultado.error){cancelarEdicaoEvento();await carregarEventos(id)}
+ const falha=resultado.error|| (editando&&!resultado.data?new Error("Este evento não está mais vinculado ao estabelecimento selecionado."):null);
+ mensagem("msgEvento",falha?"Não foi possível salvar: "+falha.message:(editando?"Evento atualizado com sucesso!":"Evento publicado com sucesso!"));
+ if(!falha){cancelarEdicaoEvento();await carregarEventos(id)}
  botao.disabled=false;
 });
 async function carregarPromocoes(id){

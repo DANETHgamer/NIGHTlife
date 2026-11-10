@@ -8,6 +8,7 @@
 - RPCs de gestão e proprietário foram restringidas a authenticated; cinco RPCs públicas de negócio continuam acessíveis por anon para fluxos de visitante.
 - A chave usada no front-end é publicável. Nenhuma chave privilegiada deve ser colocada no repositório.
 - O arquivo .gitignore exclui configuração local e arquivos gerados.
+- O mapa envia requisições de tiles ao OpenStreetMap com atribuição visível; endereços não são geocodificados nem enviados ao serviço.
 
 ## Pendências
 

@@ -11,7 +11,7 @@
 
 ## Pendências
 
-1. Proteção contra senhas vazadas: o advisor do Supabase indicou que está desativada. O conector atual não oferece alteração dessa configuração; habilite no painel Supabase em Authentication > Settings > Password Security e confirme as regras de senha. Verifique o plano e comunique usuários se a mudança impedir senhas comprometidas.
+1. Proteção contra senhas vazadas: o advisor do Supabase indicou que está desativada. A organização está no plano Free; segundo a [documentação oficial](https://supabase.com/docs/guides/auth/password-security), esse recurso está disponível no Pro ou superior. A alteração também exige ação no painel, que não está acessível nesta conexão. Não altere o plano sem aprovar o custo.
 2. Edge Function: criar-admin-regional agora está com verify_jwt=true (versão 2), além de validar explicitamente o Bearer token e o nível supremo no código. O email supremo fixo ainda deve ser substituído por uma atribuição administrativa controlável e auditável.
 3. Rate limiting: controles antifraude baseados em navegador são falsificáveis. Aplique cotas no servidor e monitore avaliações, visitas e resgates.
 4. Storage: mantenha o bucket público somente para fotos destinadas ao catálogo; não use esse bucket para documentos privados.

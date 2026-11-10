@@ -811,7 +811,25 @@ async function carregarEstabelecimentos() {
         const acoesLocal=document.createElement("div");acoesLocal.className="acoes";
         let tel=(item.telefone||"").replace(/\D/g,"");if(tel&&tel.length<=11)tel="55"+tel;
         if(tel){const w=document.createElement("a");w.className="botao";w.href="https://wa.me/"+tel;w.target="_blank";w.rel="noopener";w.textContent="Chamar no WhatsApp";w.addEventListener("click",()=>{if(!item.cadastro_informativo)registrarInteracao(item.id,"whatsapp");});acoesLocal.appendChild(w);}
-        if(item.endereco){const r=document.createElement("a");r.className="botao secundario";r.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(item.endereco);r.target="_blank";r.rel="noopener";r.textContent="Como chegar";r.addEventListener("click",()=>{if(!item.cadastro_informativo)registrarInteracao(item.id,"rota");});acoesLocal.appendChild(r);}
+        if(item.endereco){
+            const r=document.createElement("a");
+            r.className="botao secundario";
+            const temCoordenadas=item.latitude!==null&&item.latitude!==undefined&&item.longitude!==null&&item.longitude!==undefined&&Number.isFinite(Number(item.latitude))&&Number.isFinite(Number(item.longitude))&&Number(item.latitude)>=-90&&Number(item.latitude)<=90&&Number(item.longitude)>=-180&&Number(item.longitude)<=180;
+            const destino=temCoordenadas
+                ? Number(item.latitude)+","+Number(item.longitude)
+                : [item.nome,item.endereco,item.cidade,item.estado].filter(Boolean).join(", ");
+            r.href=temCoordenadas
+                ? "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino)
+                : "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(destino);
+            r.target="_blank";
+            r.rel="noopener noreferrer";
+            r.textContent=temCoordenadas?"Como chegar":"Ver local no mapa";
+            r.title=temCoordenadas
+                ?"Abrir rota para as coordenadas cadastradas."
+                :"O mapa pesquisará o nome e o endereço; as coordenadas exatas ainda não foram confirmadas.";
+            r.addEventListener("click",()=>{if(!item.cadastro_informativo)registrarInteracao(item.id,"rota");});
+            acoesLocal.appendChild(r);
+        }
         if(acoesLocal.childElementCount)card.appendChild(acoesLocal);if(!item.cadastro_informativo)observarVisualizacaoEstabelecimento(card,item.id);
 
         if (!item.cadastro_informativo) {

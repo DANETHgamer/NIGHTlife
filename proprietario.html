@@ -4,8 +4,10 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080808">
 <title>NIGHTlife | Área do Proprietário</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Oswald:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#301017,#080808 60%);color:#eee;font:15px Arial,sans-serif}.top{padding:20px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#100b0d;border-bottom:2px solid #ff1738}.logo{font:800 26px Orbitron,sans-serif}.logo span{font:normal 26px Pacifico,cursive;color:#ff1738}button,a.btn{border:1px solid #ff526b;border-radius:8px;padding:11px 15px;background:linear-gradient(135deg,#ff1738,#a80020);color:white;font-weight:bold;cursor:pointer;text-decoration:none}.secondary{background:#242424!important;border-color:#484848!important}main{max-width:1050px;margin:auto;padding:28px 16px 55px}h1,h2,h3{font-family:Oswald,sans-serif}h1{font-size:32px;margin:0 0 5px}.muted{color:#aaa;line-height:1.6}.panel{background:linear-gradient(145deg,#191919,#101010);border:1px solid #383838;border-radius:13px;padding:20px;margin:18px 0}.panel h2{margin:0 0 12px;border-left:4px solid #ff1738;padding-left:12px}.item{padding:14px 0;border-bottom:1px solid #333}.item:last-child{border:0}.item strong{font:600 20px Oswald}.pix{font-size:18px;font-weight:bold;color:#ff8b9c;overflow-wrap:anywhere;padding:12px;background:#090909;border:1px dashed #63303a;border-radius:8px}.msg{color:#ffb7c1;white-space:pre-wrap;line-height:1.5}.rodape{text-align:center;color:#777;padding:22px;font-size:11px;letter-spacing:2px}#conteudo{display:none}button:disabled{opacity:.5;cursor:wait}input,textarea,select{width:100%;padding:12px;margin:7px 0;border-radius:8px;border:1px solid #444;background:#090909;color:#fff;font:15px Arial}textarea{min-height:85px;resize:vertical}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.form-grid button{align-self:end}.grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.foto{background:#0b0b0b;border:1px solid #333;border-radius:9px;padding:9px}.foto img{width:100%;height:150px;object-fit:cover;border-radius:6px}.foto button,.linha button{margin-top:8px}.linha{padding:12px 0;border-bottom:1px solid #333}.linha:last-child{border:0}.seletor{max-width:600px}.aviso{padding:12px;border-left:3px solid #ff1738;background:#190d10;color:#ddd;border-radius:6px}@media(max-width:520px){.top{align-items:flex-start}.top>div:last-child{display:flex;gap:8px;flex-wrap:wrap}.panel{padding:15px}}
+ .mapa-selecao{height:300px;margin:10px 0;border:1px solid #444;border-radius:10px;overflow:hidden;background:#171717}
 </style></head>
 <body>
 <header class="top"><div class="logo">NIGHT<span>life</span></div><div><a class="btn secondary" href="index.html">Página inicial</a> <button id="sair" type="button">Sair</button></div></header>
@@ -13,7 +15,13 @@
 <div id="status" class="panel">Verificando sua conta...</div>
 <div id="conteudo">
 <h1>Área do Proprietário</h1><p class="muted" id="ola">Bem-vindo ao seu espaço no NIGHTlife.</p>
-<section class="panel"><h2>Meus estabelecimentos</h2><p class="muted">Você só pode administrar estabelecimentos vinculados à sua conta.</p><select id="estabelecimento" class="seletor"><option value="">Carregando seus estabelecimentos...</option></select><div id="dadosEstabelecimento" class="muted"></div><div class="aviso" style="margin-top:14px">Quer atualizar os dados do seu estabelecimento? Clique no botão vermelho abaixo.</div><button id="abrirEdicaoEstabelecimento" type="button" style="display:block;width:100%;margin-top:12px;padding:15px;font-size:16px">✏️ EDITAR DADOS DO ESTABELECIMENTO</button><form id="formEditarEstabelecimento" style="display:none;margin-top:14px"><h3>Editar informações do estabelecimento</h3><input id="editarNome" maxlength="120" placeholder="Nome do estabelecimento" required><input id="editarTipo" maxlength="100" placeholder="Categoria / tipo"><input id="editarEndereco" maxlength="250" placeholder="Endereço"><input id="editarTelefone" maxlength="40" placeholder="Telefone / WhatsApp"><button id="salvarEdicaoEstabelecimento" type="submit">Salvar alterações</button> <button id="cancelarEdicaoEstabelecimento" type="button" class="secondary">Cancelar</button><p id="msgEdicaoEstabelecimento" class="msg" aria-live="polite"></p></form></section>
+<section class="panel"><h2>Meus estabelecimentos</h2><p class="muted">Você só pode administrar estabelecimentos vinculados à sua conta.</p><select id="estabelecimento" class="seletor"><option value="">Carregando seus estabelecimentos...</option></select><div id="dadosEstabelecimento" class="muted"></div><div class="aviso" style="margin-top:14px">Quer atualizar os dados do seu estabelecimento? Clique no botão vermelho abaixo.</div><button id="abrirEdicaoEstabelecimento" type="button" style="display:block;width:100%;margin-top:12px;padding:15px;font-size:16px">✏️ EDITAR DADOS DO ESTABELECIMENTO</button><form id="formEditarEstabelecimento" style="display:none;margin-top:14px"><h3>Editar informações do estabelecimento</h3><input id="editarNome" maxlength="120" placeholder="Nome do estabelecimento" required><input id="editarTipo" maxlength="100" placeholder="Categoria / tipo"><input id="editarEndereco" maxlength="250" placeholder="Endereço"><input id="editarTelefone" maxlength="40" placeholder="Telefone / WhatsApp">
+<p class="muted">Marque a localização exata do estabelecimento. O endereço não é enviado ao serviço do mapa.</p>
+<div id="mapaEdicao" class="mapa-selecao" role="region" aria-label="Selecione a localização do estabelecimento no mapa"></div>
+<input id="editarLatitude" type="hidden"><input id="editarLongitude" type="hidden">
+<p id="coordenadasEdicao" class="muted" aria-live="polite">Localização opcional.</p>
+<button id="limparLocalizacaoEdicao" type="button" class="secondary">Remover localização</button>
+<button id="salvarEdicaoEstabelecimento" type="submit">Salvar alterações</button> <button id="cancelarEdicaoEstabelecimento" type="button" class="secondary">Cancelar</button><p id="msgEdicaoEstabelecimento" class="msg" aria-live="polite"></p></form></section>
 
 <section class="panel" id="painelVisitas"><h2>👥 Clientes enviados pelo NIGHTlife</h2><p class="muted">O cliente gera um código na página do seu estabelecimento. Quando ele chegar, digite o código abaixo para confirmar a visita. Cada código só pode ser confirmado uma vez.</p><div class="aviso" style="margin:12px 0">Visitas confirmadas: <strong id="totalVisitas">Carregando...</strong></div><form id="formConfirmarVisita"><label class="muted" for="codigoVisita">Código apresentado pelo cliente</label><div class="form-grid"><input id="codigoVisita" type="text" maxlength="11" placeholder="Ex.: NL-A1B2C3D4" autocomplete="off" required><button id="confirmarVisita" type="submit">Confirmar visita</button></div></form><p id="msgVisita" class="msg" aria-live="polite"></p><h3>Últimas visitas confirmadas</h3><div id="historicoVisitas" class="muted">Carregando histórico...</div></section>
 
@@ -45,6 +53,7 @@ if (!window.supabase?.createClient) {
  el("status").textContent="Não foi possível carregar a conexão do NIGHTlife. Atualize a página ou tente outro navegador.";
  throw new Error("Biblioteca do Supabase indisponível.");
 }
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 const SUPABASE_URL="https://crmfxxsrhdncvaaxezvz.supabase.co",SUPABASE_KEY="sb_publishable_xItZ3WXBgTbXIE67HzvDlQ_vjMjza2Q",BUCKET="nightlife-estabelecimentos";
 if (!window.supabase || typeof window.supabase.createClient !== "function") {
  el("status").textContent = "A conexão do NIGHTlife não carregou. Verifique sua internet e atualize a página."; 
@@ -55,6 +64,29 @@ function comPrazo(promessa, descricao, ms=15000) {
  return Promise.race([promessa,new Promise((_, rejeitar)=>setTimeout(()=>rejeitar(new Error("Tempo esgotado ao "+descricao+". Verifique sua conexão e tente novamente.")),ms))]);
 }
 let usuario=null,estabelecimentos=[];
+let mapaEdicao=null,marcadorEdicao=null;
+function atualizarPinoEdicao(latlng){
+ el("editarLatitude").value=latlng.lat.toFixed(6);el("editarLongitude").value=latlng.lng.toFixed(6);
+ el("coordenadasEdicao").textContent="Localização marcada: "+el("editarLatitude").value+", "+el("editarLongitude").value;
+ if(!marcadorEdicao){marcadorEdicao=L.marker(latlng,{draggable:true}).addTo(mapaEdicao);marcadorEdicao.on("dragend",()=>atualizarPinoEdicao(marcadorEdicao.getLatLng()));}
+ else marcadorEdicao.setLatLng(latlng);
+}
+function limparPinoEdicao(){
+ el("editarLatitude").value="";el("editarLongitude").value="";el("coordenadasEdicao").textContent="Localização opcional.";
+ if(marcadorEdicao&&mapaEdicao)mapaEdicao.removeLayer(marcadorEdicao);marcadorEdicao=null;
+}
+function prepararMapaEdicao(item){
+ if(!window.L){el("mapaEdicao").textContent="Mapa indisponível; você ainda pode editar os demais dados.";return;}
+ const lat=Number(item.latitude),lng=Number(item.longitude),temLocal=item.latitude!==null&&item.latitude!==undefined&&item.longitude!==null&&item.longitude!==undefined&&Number.isFinite(lat)&&Number.isFinite(lng);
+ if(!mapaEdicao){
+  mapaEdicao=L.map("mapaEdicao").setView(temLocal?[lat,lng]:[-14.235,-51.925],temLocal?15:4);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(mapaEdicao);
+  mapaEdicao.on("click",event=>atualizarPinoEdicao(event.latlng));
+ }
+ mapaEdicao.invalidateSize();mapaEdicao.setView(temLocal?[lat,lng]:[-14.235,-51.925],temLocal?15:4);
+ if(temLocal)atualizarPinoEdicao({lat,lng});else limparPinoEdicao();
+}
+
 function texto(tag,valor){const n=document.createElement(tag);n.textContent=valor;return n}
 function mensagem(id,valor){el(id).textContent=valor}
 function idAtual(){return el("estabelecimento").value}
@@ -74,7 +106,7 @@ async function iniciar(){
  el("conteudo").style.display="block";
  el("status").style.display="block";
  el("status").textContent="Carregando seus estabelecimentos...";
- const resultadoEstabelecimentos=await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
+ const resultadoEstabelecimentos=await comPrazo(db.from("estabelecimentos").select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo,latitude,longitude").eq("usuario_id",usuario.id).order("criado_em",{ascending:false}),"carregar seus estabelecimentos");
  if(resultadoEstabelecimentos.error){el("estabelecimento").replaceChildren(texto("option","Erro ao carregar: "+resultadoEstabelecimentos.error.message));el("status").textContent="Erro ao carregar estabelecimentos: "+resultadoEstabelecimentos.error.message;return}
  estabelecimentos=resultadoEstabelecimentos.data||[];
  const select=el("estabelecimento");select.replaceChildren();
@@ -88,13 +120,15 @@ el("abrirEdicaoEstabelecimento").addEventListener("click",()=>{
  const item=estabelecimentos.find(x=>x.id===idAtual());if(!item)return;
  el("editarNome").value=item.nome||"";el("editarTipo").value=item.tipo||"";el("editarEndereco").value=item.endereco||"";el("editarTelefone").value=item.telefone||"";
  el("msgEdicaoEstabelecimento").textContent="";el("formEditarEstabelecimento").style.display="block";
+ prepararMapaEdicao(item);
 });
 el("cancelarEdicaoEstabelecimento").addEventListener("click",()=>{el("formEditarEstabelecimento").style.display="none";});
+el("limparLocalizacaoEdicao").addEventListener("click",limparPinoEdicao);
 el("formEditarEstabelecimento").addEventListener("submit",async e=>{
  e.preventDefault();const id=idAtual();if(!id||!usuario)return;
  const botao=el("salvarEdicaoEstabelecimento");botao.disabled=true;mensagem("msgEdicaoEstabelecimento","Salvando alterações...");
- const alteracoes={nome:el("editarNome").value.trim(),tipo:el("editarTipo").value.trim()||null,endereco:el("editarEndereco").value.trim()||null,telefone:el("editarTelefone").value.trim()||null};
- const resultado=await comPrazo(db.from("estabelecimentos").update(alteracoes).eq("id",id).eq("usuario_id",usuario.id).select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo").single(),"salvar as informações");
+ const alteracoes={nome:el("editarNome").value.trim(),tipo:el("editarTipo").value.trim()||null,endereco:el("editarEndereco").value.trim()||null,telefone:el("editarTelefone").value.trim()||null,latitude:el("editarLatitude").value?Number(el("editarLatitude").value):null,longitude:el("editarLongitude").value?Number(el("editarLongitude").value):null};
+ const resultado=await comPrazo(db.from("estabelecimentos").update(alteracoes).eq("id",id).eq("usuario_id",usuario.id).select("id,nome,endereco,telefone,tipo,status_plano,vencimento_em,ativo,latitude,longitude").single(),"salvar as informações");
  if(resultado.error){mensagem("msgEdicaoEstabelecimento","Não foi possível salvar: "+resultado.error.message);botao.disabled=false;return}
  const indice=estabelecimentos.findIndex(x=>x.id===id);if(indice>=0)estabelecimentos[indice]={...estabelecimentos[indice],...resultado.data};
  mensagem("msgEdicaoEstabelecimento","Informações atualizadas com sucesso!");

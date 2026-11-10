@@ -17,6 +17,7 @@ O navegador também acessa RPCs/Edge Functions e Storage. Operações privilegia
 
 - O catálogo lê a view public.estabelecimentos_publicos, limitada aos campos públicos.
 - Novos cadastros entram pendentes e inativos; um administrador deve ativar o local.
+- Cadastros informativos do diretório são independentes dos perfis de proprietário: usam status informativo, cobrança zero, usuário nulo, fonte pública e data de consulta. A vitrine deixa claro que não representam parceria oficial e não oferece código de visita nem formulário de avaliação.
 - Alterações de perfil do proprietário são limitadas por RLS e grants de coluna.
 - Operações administrativas e publicação passam por funções autorizadas.
 - Avaliação, geração de visita, interação, visualização de oferta e pedido de resgate têm operações públicas limitadas; devem manter validação, cotas e proteção contra abuso no servidor.
@@ -27,7 +28,7 @@ PostgreSQL pode crescer com o produto se houver paginação, índices nas chaves
 
 Pagamentos: o código observado usa Pix manual. Antes da automação, escolha um gateway e crie um fluxo backend com webhook assinado, idempotência e estados de cobrança. Não aceite preço, confirmação ou credenciais enviados pelo navegador.
 
-Mapas: Leaflet 1.9.4 renderiza tiles OpenStreetMap na vitrine. Latitude e longitude opcionais são escolhidas manualmente no mapa durante o cadastro ou edição pelo proprietário e validadas por constraints no banco. Não há geocodificação: o endereço não é enviado ao provedor. Locais antigos não têm coordenadas e só aparecem como pinos após edição. A aplicação atribui OpenStreetMap no controle do mapa; mantenha a atribuição e respeite a política de uso de tiles. A API pública Nominatim não é usada.
+Mapas: Leaflet 1.9.4 renderiza tiles OpenStreetMap na vitrine. Latitude e longitude opcionais são escolhidas manualmente no mapa durante o cadastro ou edição pelo proprietário e validadas por constraints no banco. Não há geocodificação: o endereço não é enviado ao provedor. Locais antigos e cadastros informativos sem coordenadas aparecem nos cartões, sem pino, até que a localização seja confirmada e preenchida. A aplicação atribui OpenStreetMap no controle do mapa; mantenha a atribuição e respeite a política de uso de tiles. A API pública Nominatim não é usada.
 
 ## Limites conhecidos
 

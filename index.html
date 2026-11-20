@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Oswald:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
 * { box-sizing: border-box; }
 
@@ -264,7 +263,7 @@ main {
     cursor: wait;
 }
 
-.mapa-estabelecimentos{height:360px;margin:14px 0;border:1px solid #444;border-radius:12px;overflow:hidden;background:#171717}.mapa-estabelecimentos-vazio{padding:18px;color:#aaa}.grade-fotos-publicas{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin:14px 0}.grade-fotos-publicas img{width:100%;height:115px;object-fit:cover;border-radius:8px;border:1px solid #444}.codigo-resgate {
+.grade-fotos-publicas{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin:14px 0}.grade-fotos-publicas img{width:100%;height:115px;object-fit:cover;border-radius:8px;border:1px solid #444}.codigo-resgate {
     margin-top: 10px !important;
     padding: 10px;
     border: 1px dashed #ff526b;
@@ -447,6 +446,23 @@ footer p {
 .acesso-card a{margin-top:auto;display:block;padding:11px;border-radius:7px;background:#1b1b1b;border:1px solid #ff1738;color:#fff;text-align:center;text-decoration:none;font-weight:bold}
 .acesso-card a:hover{background:#310d15}
 .acesso-card.destaque{border-top:3px solid #ff1738}
+
+/* Refinamento visual: cartões, campos e navegação mais consistentes */
+:root{--vermelho:#f0183b;--vermelho-escuro:#a90b27;--prata:#e7e7e7;--card:#151515}
+body{background:radial-gradient(ellipse at 50% -15%,#261016 0,#090909 52%);color:#f4f4f4;letter-spacing:.1px}
+header{padding:clamp(32px,5vw,58px) 16px 38px;background:radial-gradient(ellipse at 50% 0%,#45121f 0,#180a0e 48%,#080808 100%);box-shadow:0 12px 35px #0008}
+main{max-width:1180px;padding:30px 18px 54px}
+.acoes{gap:14px;margin-bottom:42px}
+.botao,.botao-oferta{border-radius:10px;box-shadow:0 7px 20px #0005;transition:transform .2s,box-shadow .2s,border-color .2s}
+.botao:hover,.botao-oferta:hover{transform:translateY(-2px);box-shadow:0 10px 26px #f0183b25}
+.card{border:1px solid #343434;border-radius:16px;background:linear-gradient(150deg,#1c1c1c,#101010);padding:23px;box-shadow:0 8px 24px #0004}
+.card:hover{border-color:#8f263b;box-shadow:0 14px 32px #0008}
+.secao-titulo{margin-top:44px;border-bottom-color:#3b252a}
+.secao-titulo h2{letter-spacing:1.3px}
+input,select,textarea{border-radius:10px!important;border:1px solid #454545!important;background:#101010!important;color:#f5f5f5!important}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#f0183b!important;box-shadow:0 0 0 3px #f0183b20}
+footer{border-top:1px solid #5a1726;background:#0b0b0b;padding:24px 12px;color:#aaa}
+@media(max-width:600px){header{padding-top:30px}.logo-texto{letter-spacing:-1.5px}.slogan{font-size:14px;letter-spacing:3px}.card{padding:19px}.acoes .botao{width:100%}}
 </style>
 </head>
 
@@ -485,8 +501,6 @@ footer p {
             <button id="buscarEstabelecimentos" type="button">Pesquisar</button>
         </div>
         <p class="cidade-destaque">Encontre estabelecimentos por estado e cidade em todo o Brasil.</p>
-        <p class="cidade-destaque">O mapa usa OpenStreetMap. Ao carregá-lo, seu navegador se conecta ao serviço de mapas; os endereços não são enviados para geocodificação.</p>
-        <div id="mapaEstabelecimentos" class="mapa-estabelecimentos" role="region" aria-label="Mapa dos estabelecimentos publicados"></div>
         <p id="mensagemEstabelecimentos" class="mensagem">
             Carregando estabelecimentos...
         </p>
@@ -517,8 +531,6 @@ footer p {
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
 <script>
 const SUPABASE_URL =
 "https://crmfxxsrhdncvaaxezvz.supabase.co";
@@ -622,51 +634,6 @@ function formatarData(data) {
     return new Date(data).toLocaleDateString("pt-BR");
 }
 
-let mapaEstabelecimentos = null;
-let marcadoresEstabelecimentos = null;
-
-function desenharMapaEstabelecimentos(itens) {
-    const alvo = document.getElementById("mapaEstabelecimentos");
-    if (!alvo) return;
-    if (!window.L) {
-        alvo.textContent = "Não foi possível carregar o mapa.";
-        return;
-    }
-
-    if (!mapaEstabelecimentos) {
-        mapaEstabelecimentos = L.map(alvo).setView([-14.235, -51.925], 4);
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(mapaEstabelecimentos);
-        marcadoresEstabelecimentos = L.featureGroup().addTo(mapaEstabelecimentos);
-    }
-    marcadoresEstabelecimentos.clearLayers();
-
-    const comCoordenadas = (itens || []).filter(item => {
-        const lat = Number(item.latitude), lng = Number(item.longitude);
-        return item.latitude !== null && item.latitude !== undefined && item.longitude !== null && item.longitude !== undefined && Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-    });
-
-    comCoordenadas.forEach(item => {
-        const popup = document.createElement("div");
-        const nome = document.createElement("strong");
-        nome.textContent = item.nome || "Estabelecimento";
-        const endereco = document.createElement("p");
-        endereco.textContent = [item.endereco, item.cidade, item.estado].filter(Boolean).join(", ");
-        popup.append(nome, endereco);
-        L.marker([Number(item.latitude), Number(item.longitude)])
-            .bindPopup(popup)
-            .addTo(marcadoresEstabelecimentos);
-    });
-
-    if (comCoordenadas.length) {
-        mapaEstabelecimentos.fitBounds(marcadoresEstabelecimentos.getBounds().pad(0.12), { maxZoom: 13 });
-    } else {
-        mapaEstabelecimentos.setView([-14.235, -51.925], 4);
-    }
-}
-
 async function carregarEstabelecimentos() {
 
     const mensagem = document.getElementById("mensagemEstabelecimentos");
@@ -695,7 +662,6 @@ async function carregarEstabelecimentos() {
     }
 
     estabelecimentosVisiveis = data || [];
-    desenharMapaEstabelecimentos(estabelecimentosVisiveis);
 
     if (estabelecimentosVisiveis.length === 0) {
         mensagem.textContent =
@@ -823,10 +789,10 @@ async function carregarEstabelecimentos() {
                 : "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(destino);
             r.target="_blank";
             r.rel="noopener noreferrer";
-            r.textContent=temCoordenadas?"Como chegar":"Ver local no mapa";
+            r.textContent=temCoordenadas?"Como chegar":"Buscar endereço";
             r.title=temCoordenadas
                 ?"Abrir rota para as coordenadas cadastradas."
-                :"O mapa pesquisará o nome e o endereço; as coordenadas exatas ainda não foram confirmadas.";
+                :"Abrir uma busca externa pelo endereço informado; as coordenadas exatas ainda não foram confirmadas.";
             r.addEventListener("click",()=>{if(!item.cadastro_informativo)registrarInteracao(item.id,"rota");});
             acoesLocal.appendChild(r);
         }
